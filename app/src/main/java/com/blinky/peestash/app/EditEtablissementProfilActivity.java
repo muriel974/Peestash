@@ -6,10 +6,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -36,9 +33,11 @@ public class EditEtablissementProfilActivity extends Activity {
     String id_user = "";
     private EditText editNom, editAdresse, editCP, editVille, editPays, editMobile,
             editFixe, editSiteweb, editImage, editMdp, editFacebook, editConfirmMdp, editEmail, editConfirmEmail;
+    TextView affichageEmail;
     private Button btnSave;
-    private String nom ="", email ="", ville ="", adresse ="", cp ="", pays ="",
-            telportable ="", telfixe ="", siteweb ="", imgUrl ="", password ="", facebook="";
+    private String nom ="", email ="", confirmEmail="", ville ="", adresse ="", cp ="", pays ="",
+            telportable ="", telfixe ="", siteweb ="", imgUrl ="", password ="", confirmMdp="", facebook="";
+    String msg="";
 
 
     @Override
@@ -51,6 +50,7 @@ public class EditEtablissementProfilActivity extends Activity {
         Bundle var = this.getIntent().getExtras();
         id_user = var.getString("id_user");
         editEmail = (EditText) findViewById(R.id.editEmail);
+        affichageEmail = (TextView) findViewById(R.id.affichageEmail);
         editConfirmEmail = (EditText) findViewById(R.id.editConfirmEmail);
         editAdresse = (EditText) findViewById(R.id.editAdresse);
         editCP = (EditText) findViewById(R.id.editCP);
@@ -97,12 +97,12 @@ public class EditEtablissementProfilActivity extends Activity {
         } catch (ClientProtocolException e) {
 
             Log.e("ClientProtocole", "Log_tag");
-            String msg = "Erreur client protocole";
+            msg = "Erreur client protocole";
 
         } catch (IOException e) {
             Log.e("Log_tag", "IOException");
             e.printStackTrace();
-            String msg = "Erreur IOException";
+            msg = "Erreur IOException";
         }
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
@@ -128,7 +128,7 @@ public class EditEtablissementProfilActivity extends Activity {
                 facebook = element.getString("facebook");
 
                 editNom.setText(nom);
-                editEmail.setText(email);
+                affichageEmail.setText(email);
                 editAdresse.setText(adresse);
                 editCP.setText(cp);
                 editVille.setText(ville);
@@ -145,7 +145,7 @@ public class EditEtablissementProfilActivity extends Activity {
             result = total.toString();
 
             if (result.equals(null) || result.equals("[]")) {
-                String msg = "Erreur de lecture";
+                msg = "Erreur de lecture";
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
             }
 
@@ -162,6 +162,7 @@ public class EditEtablissementProfilActivity extends Activity {
                 String tag = "update_EtablissementProfil";
                 nom = "" + editNom.getText().toString();
                 email = "" + editEmail.getText().toString();
+                confirmEmail = "" + editConfirmEmail.getText().toString();
                 adresse = "" + editAdresse.getText().toString();
                 cp = "" + editCP.getText().toString();
                 ville = "" + editVille.getText().toString();
@@ -179,7 +180,6 @@ public class EditEtablissementProfilActivity extends Activity {
                 nameValuePairs.add(new BasicNameValuePair("tag", tag));
                 nameValuePairs.add(new BasicNameValuePair("id", id_user));
                 nameValuePairs.add(new BasicNameValuePair("nom", nom));
-                nameValuePairs.add(new BasicNameValuePair("email", email));
                 nameValuePairs.add(new BasicNameValuePair("adresse", adresse));
                 nameValuePairs.add(new BasicNameValuePair("code_postal", cp));
                 nameValuePairs.add(new BasicNameValuePair("ville", ville));
@@ -191,41 +191,75 @@ public class EditEtablissementProfilActivity extends Activity {
                 nameValuePairs.add(new BasicNameValuePair("facebook", facebook));
                 nameValuePairs.add(new BasicNameValuePair("password", password));
 
-                //setting the connection to the database
-                try {
-                    //Setting up the default http client
-                    HttpClient httpClient = new DefaultHttpClient();
+                String emailvalid = "ok";
 
-                    //setting up the http post method
-                    HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
-                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                if (email != "") {
+                    if (checkEmail(email, confirmEmail)) {
+                        emailvalid = "ok";
+                        nameValuePairs.add(new BasicNameValuePair("email", email));
+                    } else {
+                        emailvalid = "no";
+                    }
+                } else {
+                    email = "" + affichageEmail.getText().toString();
+                    nameValuePairs.add(new BasicNameValuePair("email", email));
+                }
 
-                    //getting the response
-                    HttpResponse response = httpClient.execute(httpPost);
+                if (emailvalid == "ok") {
+                    //setting the connection to the database
+                    try {
+                        //Setting up the default http client
+                        HttpClient httpClient = new DefaultHttpClient();
 
-                    //setting up the entity
-                    HttpEntity entity = response.getEntity();
+                        //setting up the http post method
+                        HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
+                        httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-                    //setting up the content inside the input stream reader
-                    is = entity.getContent();
+                        //getting the response
+                        HttpResponse response = httpClient.execute(httpPost);
 
-                    //displaying a toast message if the data is entered in the database
-                    String msg = "Données modifiées en BDD établissement";
+                        //setting up the entity
+                        HttpEntity entity = response.getEntity();
+
+                        //setting up the content inside the input stream reader
+                        is = entity.getContent();
+
+                        //displaying a toast message if the data is entered in the database
+                        msg = "Données modifiées en BDD établissement";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+
+                    } catch (ClientProtocolException e) {
+                        Log.e("ClientProtocole", "Log_tag");
+                        msg = "Erreur client protocole";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Log.e("Log_tag", "IOException");
+                        e.printStackTrace();
+                        msg = "Erreur IOException";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    }
+                }else {
+                    msg = "Veuillez écrire correctement la confirmation d'email";
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 
-                } catch (ClientProtocolException e) {
-                    Log.e("ClientProtocole", "Log_tag");
-                    String msg = "Erreur client protocole";
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    Log.e("Log_tag", "IOException");
-                    e.printStackTrace();
-                    String msg = "Erreur IOException";
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                 }
             }
         });
 
     }
+    private Boolean checkEmail(String email, String confirmEmail) {
+        Boolean verif;
+        if(email.equals(confirmEmail))
+        {
+            msg="VERIF EMAIL OK";
+            verif=true;
+        }
+        else {
+            msg="VERIF EMAIL NON OK";
+            verif=false;
+        }
+        return verif;
+    }
+
 
 }

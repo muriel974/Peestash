@@ -33,15 +33,19 @@ import android.view.View.OnClickListener;
 public class EditArtistProfilActivity extends Activity implements AdapterView.OnItemSelectedListener {
 
     String id_user = "";
-    private EditText editPseudo, editEmail, editAdress, editCP, editNom, editPrenom, editVille, editPays, editTelMobile,
-            editTelFixe, editSoundcloud, editSiteweb, editImgUrl, editPassword;
+    private EditText editPseudo, editEmail, editConfirmEmail, editAdress, editCP, editNom, editPrenom, editVille, editPays, editTelMobile,
+            editTelFixe, editSoundcloud, editSiteweb, editImgUrl, editPassword, editConfirmMdp;
+    TextView affichageEmail;
+
     private Button btnSave;
-    private String pseudo = "", nom = "", prenom = "", age = "", email = "", ville = "", adresse = "", cp = "", pays = "",
-            telportable = "", telfixe = "", dispo = "", soundcloud = "", siteweb = "", imgUrl = "", genre_musical = "", password = "";
+    private String pseudo = "", nom = "", prenom = "", age = "", email = "", confirmEmail="", ville = "", adresse = "", cp = "", pays = "",
+            telportable = "", telfixe = "", dispo = "", soundcloud = "", siteweb = "", imgUrl = "", genre_musical = "", password = "", confirmMdp="";
     private CheckBox rock, pop, metal, jazz, funk, electro, blues, rap, folk, classique, lundi, mardi, mercredi, jeudi, vendredi, samedi, dimanche;
     private String genremusical = "", disponibilites = "";
+
     private ArrayList<String> genrelist = new ArrayList<String>();
     private ArrayList<String> dispolist = new ArrayList<String>();
+    String msg="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +65,10 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
         String tag = "read_ArtistProfil";
         Bundle var = this.getIntent().getExtras();
         id_user = var.getString("id_user");
+        affichageEmail = (TextView) findViewById(R.id.affichageEmail);
+
         editEmail = (EditText) findViewById(R.id.editEmail);
+        editConfirmEmail = (EditText) findViewById(R.id.editConfirmEmail);
         editPseudo = (EditText) findViewById(R.id.editPseudo);
         editAdress = (EditText) findViewById(R.id.editAdress);
         editCP = (EditText) findViewById(R.id.editCP);
@@ -167,7 +174,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                 editNom.setText(nom);
                 editPrenom.setText(prenom);
                 editPseudo.setText(pseudo);
-                editEmail.setText(email);
+                affichageEmail.setText(email);
                 editAdress.setText(adresse);
                 editCP.setText(cp);
                 editVille.setText(ville);
@@ -288,10 +295,12 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                 InputStream is = null;
                 String result = null;
                 String tag = "update_ArtistProfil";
+
                 nom = "" + editNom.getText().toString();
                 prenom = "" + editPrenom.getText().toString();
                 pseudo = "" + editPseudo.getText().toString();
                 email = "" + editEmail.getText().toString();
+                confirmEmail = "" + editConfirmEmail.getText().toString();
                 adresse = "" + editAdress.getText().toString();
                 cp = "" + editCP.getText().toString();
                 ville = "" + editVille.getText().toString();
@@ -314,7 +323,6 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                 nameValuePairs.add(new BasicNameValuePair("nom", nom));
                 nameValuePairs.add(new BasicNameValuePair("prenom", prenom));
                 nameValuePairs.add(new BasicNameValuePair("pseudo", pseudo));
-                nameValuePairs.add(new BasicNameValuePair("email", email));
                 nameValuePairs.add(new BasicNameValuePair("adresse", adresse));
                 nameValuePairs.add(new BasicNameValuePair("code_postal", cp));
                 nameValuePairs.add(new BasicNameValuePair("ville", ville));
@@ -329,39 +337,60 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                 nameValuePairs.add(new BasicNameValuePair("genre_musical", genre_musical));
                 nameValuePairs.add(new BasicNameValuePair("password", password));
 
-                //setting the connection to the database
-                try {
-                    //Setting up the default http client
-                    HttpClient httpClient = new DefaultHttpClient();
+                String emailvalid="ok";
 
-                    //setting up the http post method
-                    HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
-                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                if(email!="") {
+                    if (checkEmail(email, confirmEmail)) {
+                        emailvalid="ok";
+                        nameValuePairs.add(new BasicNameValuePair("email", email));
+                    }
+                    else {
+                        emailvalid="no";
+                    }
+                }else {
+                    email = "" + affichageEmail.getText().toString();
+                    nameValuePairs.add(new BasicNameValuePair("email", email));
+                }
+                if(emailvalid=="ok") {
+                    //setting the connection to the database
+                    try {
+                        //Setting up the default http client
+                        HttpClient httpClient = new DefaultHttpClient();
 
-                    //getting the response
-                    HttpResponse response = httpClient.execute(httpPost);
+                        //setting up the http post method
+                        HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
+                        httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-                    //setting up the entity
-                    HttpEntity entity = response.getEntity();
+                        //getting the response
+                        HttpResponse response = httpClient.execute(httpPost);
 
-                    //setting up the content inside the input stream reader
-                    is = entity.getContent();
+                        //setting up the entity
+                        HttpEntity entity = response.getEntity();
 
-                    //displaying a toast message if the data is entered in the database
-                    String msg = "Données modifiées en BDD artist";
+                        //setting up the content inside the input stream reader
+                        is = entity.getContent();
+
+                        //displaying a toast message if the data is entered in the database
+                        msg = "Données modifiées en BDD artist";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+
+                    } catch (ClientProtocolException e) {
+                        Log.e("ClientProtocole", "Log_tag");
+                        msg = "Erreur client protocole";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Log.e("Log_tag", "IOException");
+                        e.printStackTrace();
+                        msg = "Erreur IOException";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    }
+                }else {
+                    msg = "Veuillez écrire correctement la confirmation d'email";
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 
-                } catch (ClientProtocolException e) {
-                    Log.e("ClientProtocole", "Log_tag");
-                    String msg = "Erreur client protocole";
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    Log.e("Log_tag", "IOException");
-                    e.printStackTrace();
-                    String msg = "Erreur IOException";
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                 }
             }
+
         });
 
         // Spinner click listener
@@ -378,6 +407,20 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
 
         int posi = categories.indexOf(age);
         spinnerAge.setSelection(posi);
+    }
+
+    private Boolean checkEmail(String email, String confirmEmail) {
+        Boolean verif;
+        if(email.equals(confirmEmail))
+        {
+            msg="VERIF EMAIL OK";
+            verif=true;
+        }
+        else {
+            msg="VERIF EMAIL NON OK";
+            verif=false;
+        }
+        return verif;
     }
 
     public void addListenerOnChkWindows() {
@@ -645,4 +688,5 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
     public void onNothingSelected(AdapterView<?> parent) {
 
     }
+
 }

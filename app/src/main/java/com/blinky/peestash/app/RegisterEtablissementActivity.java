@@ -29,8 +29,9 @@ import java.util.List;
 
 public class RegisterEtablissementActivity extends Activity {
 
-    EditText etName, etEmail, etPassword;
+    EditText etName, etEmail, etConfirmEmail, etPassword, etConfirmMdp;
     Button btSubmit;
+    String nom, email, confirmEmail, password, confirmPassword, tag, msg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +39,11 @@ public class RegisterEtablissementActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_register_etablissement);
 
-
         etName = (EditText) findViewById(R.id.editName);
         etEmail = (EditText) findViewById(R.id.editEmail);
+        etConfirmEmail = (EditText) findViewById(R.id.editConfirmEmail);
         etPassword = (EditText) findViewById(R.id.editPassword);
+        etConfirmMdp = (EditText) findViewById(R.id.editConfirmMdp);
         btSubmit = (Button) findViewById(R.id.btregister);
 
         // On met un Listener sur le bouton
@@ -51,54 +53,89 @@ public class RegisterEtablissementActivity extends Activity {
             @Override
             public void onClick(View arg0) {
                 //put the editText value into string variables
-                String nom = "" + etName.getText().toString();
-                String email = "" + etEmail.getText().toString();
-                String password = "" + etPassword.getText().toString();
+                nom = "" + etName.getText().toString();
+                email = "" + etEmail.getText().toString();
+                confirmEmail = "" + etConfirmEmail.getText().toString();
+                password = "" + etPassword.getText().toString();
+                confirmPassword = "" + etConfirmMdp.getText().toString();
                 //tag création de compte établissement
-                String tag = "etablissement_register";
+                tag = "etablissement_register";
 
                 //setting nameValuePairs
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
                 //adding string variables into the NameValuePairs
                 nameValuePairs.add(new BasicNameValuePair("nom", nom));
-                nameValuePairs.add(new BasicNameValuePair("email", email));
+                //nameValuePairs.add(new BasicNameValuePair("email", email));
                 nameValuePairs.add(new BasicNameValuePair("password", password));
                 nameValuePairs.add(new BasicNameValuePair("tag", tag));
 
-                //setting the connection to the database
-                try {
-                    //Setting up the default http client
-                    HttpClient httpClient = new DefaultHttpClient();
+                String emailvalid = "ok";
 
-                    //setting up the http post method
-                    HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
-                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                if (email != "") {
+                    if (checkEmail(email, confirmEmail)) {
+                        emailvalid = "ok";
+                        nameValuePairs.add(new BasicNameValuePair("email", email));
+                    } else {
+                        emailvalid = "no";
+                    }
+                } else {
+                    emailvalid = "no";
+                }
+                if (emailvalid == "ok") {
+                    //setting the connection to the database
+                    try {
+                        //Setting up the default http client
+                        HttpClient httpClient = new DefaultHttpClient();
 
-                    //getting the response
-                    HttpResponse response = httpClient.execute(httpPost);
+                        //setting up the http post method
+                        HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
+                        httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-                    //setting up the entity
-                    HttpEntity entity = response.getEntity();
+                        //getting the response
+                        HttpResponse response = httpClient.execute(httpPost);
 
-                    //setting up the content inside the input stream reader
-                    is = entity.getContent();
+                        //setting up the entity
+                        HttpEntity entity = response.getEntity();
 
-                    //displaying a toast message if the data is entered in the database
-                    String msg = "Données enregistrées en BDD établissement";
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                        //setting up the content inside the input stream reader
+                        is = entity.getContent();
 
-                } catch (ClientProtocolException e) {
-                    Log.e("ClientProtocole", "Log_tag");
-                    String msg = "Erreur client protocole";
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    Log.e("Log_tag", "IOException");
-                    e.printStackTrace();
-                    String msg = "Erreur IOException";
+                        //displaying a toast message if the data is entered in the database
+                        msg = "Données enregistrées en BDD établissement";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+
+                    } catch (ClientProtocolException e) {
+                        Log.e("ClientProtocole", "Log_tag");
+                        msg = "Erreur client protocole";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Log.e("Log_tag", "IOException");
+                        e.printStackTrace();
+                        msg = "Erreur IOException";
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    }
+
+                }else {
+                    msg = "Veuillez écrire correctement la confirmation d'email";
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                 }
-
             }
         });
     }
+
+    private boolean checkEmail(String email, String confirmEmail) {
+        Boolean verif;
+        //function pr verif email et confirmation d'email identiques
+        if(email.equals(confirmEmail))
+        {
+            msg="VERIF EMAIL OK";
+            verif=true;
+        }
+        else {
+            msg="VERIF EMAIL NON OK";
+            verif=false;
+        }
+        return verif;
+    }
+
 }
