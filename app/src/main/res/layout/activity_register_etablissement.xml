@@ -65,7 +65,7 @@
                 android:text="Confirmez votre e-mail" />
 
         <EditText
-                android:id="@+id/editText4"
+                android:id="@+id/editConfirmEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignLeft="@+id/textView4"
@@ -102,7 +102,7 @@
                 android:text="Confirmez votre mot de passe" />
 
         <EditText
-                android:id="@+id/editText6"
+                android:id="@+id/editConfirmMdp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignLeft="@+id/editText5"

@@ -37,33 +37,7 @@
                     android:ems="10"
                     android:id="@+id/editPseudo" android:layout_below="@+id/textView9" android:layout_alignParentLeft="true"
                     android:layout_weight="6.67" android:width="340dp"/>
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="E-mail"
-                    android:id="@+id/textView24"/>
 
-            <EditText
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:inputType="textEmailAddress"
-                    android:ems="10"
-                    android:id="@+id/editEmail"
-                    android:layout_below="@+id/editText5" android:layout_alignParentLeft="true"
-                    android:layout_weight="6.67" android:width="340dp"/>
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Confirmer l&apos;e-mail"
-                    android:id="@+id/textView22"/>
-            <EditText
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:inputType="textEmailAddress"
-                    android:ems="10"
-                    android:id="@+id/editConfirmEmail" android:width="340dp"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -77,7 +51,7 @@
                     android:inputType="textPostalAddress"
                     android:ems="10"
                     android:id="@+id/editAdress"
-                    android:layout_below="@+id/editEmail" android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/textView25" android:layout_alignParentLeft="true"
                     android:layout_weight="6.67" android:width="340dp"/>
             <TextView
                     android:layout_width="wrap_content"
@@ -391,7 +365,47 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Mot de passe"
+                    android:text="Votre E-mail "
+                    android:id="@+id/textView24"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:id="@+id/affichageEmail" android:width="340dp"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Modifier votre e-mail"
+                    android:id="@+id/modifemail"/>
+
+            <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:inputType="textEmailAddress"
+                    android:ems="10"
+                    android:id="@+id/editEmail"
+                    android:layout_below="@+id/editText5" android:layout_alignParentLeft="true"
+                    android:layout_weight="6.67" android:width="340dp"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Confirmer l&apos;e-mail"
+                    android:id="@+id/textView22"/>
+            <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:ems="10"
+                    android:id="@+id/editConfirmEmail" android:width="340dp"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Modifier votre mot de passe"
                     android:id="@+id/textView39"/>
 
             <EditText
@@ -410,7 +424,7 @@
             <EditText
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/confirmmdp" android:gravity="fill_horizontal" android:minWidth="300dp"
+                    android:id="@+id/editConfirmMdp" android:gravity="fill_horizontal" android:minWidth="300dp"
                     android:width="340dp"/>
             <Button
                     android:layout_width="229dp"
