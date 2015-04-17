@@ -26,12 +26,12 @@ public class ArtistHomeActivity extends Activity {
         // On met un Listener sur le bouton Artist
         btn_editProfil.setOnClickListener(new View.OnClickListener() {
 
-            @Override
-            public void onClick(View arg0) {
+            public void onClick(View v) {
 
-                Intent i = new Intent(ArtistHomeActivity.this, EditArtistProfilActivity.class);
-                i.putExtra("id_user", id_user);
-                startActivity(i);
+                        Intent i = new Intent(ArtistHomeActivity.this, EditArtistProfilActivity.class);
+                        i.putExtra("id_user", id_user);
+                        startActivity(i);
+
             }
         });
 

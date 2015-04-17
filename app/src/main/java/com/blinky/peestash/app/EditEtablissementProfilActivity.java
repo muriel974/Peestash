@@ -1,6 +1,7 @@
 package com.blinky.peestash.app;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -38,15 +39,14 @@ public class EditEtablissementProfilActivity extends Activity {
     private String nom ="", email ="", confirmEmail="", ville ="", adresse ="", cp ="", pays ="",
             telportable ="", telfixe ="", siteweb ="", imgUrl ="", password ="", confirmMdp="", facebook="";
     String msg="";
-
+    Verify test = new Verify();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_etablissement_profil);
         int i;
-        //tag récupération des informations de profil établissement
-        String tag = "read_EtablissementProfil";
+
         Bundle var = this.getIntent().getExtras();
         id_user = var.getString("id_user");
         editEmail = (EditText) findViewById(R.id.editEmail);
@@ -66,92 +66,10 @@ public class EditEtablissementProfilActivity extends Activity {
         editConfirmMdp = (EditText) findViewById(R.id.editConfirmMdp);
 
         btnSave = (Button) findViewById(R.id.btnSave);
-        String result = null;
 
-        InputStream is = null;
-        //setting nameValuePairs
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-        //adding string variables into the NameValuePairs
-        nameValuePairs.add(new BasicNameValuePair("tag", tag));
-        nameValuePairs.add(new BasicNameValuePair("id_user", id_user));
-        //Toast.makeText(getApplicationContext(), id_user, Toast.LENGTH_LONG).show();
+        int id=Integer.parseInt(id_user);
 
-        //setting the connection to the database
-        try {
-            //Setting up the default http client
-            HttpClient httpClient = new DefaultHttpClient();
-
-            //setting up the http post method
-            HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-            //getting the response
-            HttpResponse response = httpClient.execute(httpPost);
-
-            //setting up the entity
-            HttpEntity entity = response.getEntity();
-
-            //setting up the content inside the input stream reader
-            is = entity.getContent();
-
-        } catch (ClientProtocolException e) {
-
-            Log.e("ClientProtocole", "Log_tag");
-            msg = "Erreur client protocole";
-
-        } catch (IOException e) {
-            Log.e("Log_tag", "IOException");
-            e.printStackTrace();
-            msg = "Erreur IOException";
-        }
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            StringBuilder total = new StringBuilder();
-            String json = reader.readLine();
-            JSONTokener tokener = new JSONTokener(json);
-            JSONArray finalResult = new JSONArray(tokener);
-
-            // Access by key : value
-            for (i = 0; i < finalResult.length(); i++) {
-                JSONObject element = finalResult.getJSONObject(0);
-
-                email = element.getString("email");
-                adresse = element.getString("adresse");
-                cp = element.getString("code_postal");
-                nom = element.getString("nom");
-                ville = element.getString("ville");
-                pays = element.getString("pays");
-                telportable = element.getString("tel_portable");
-                telfixe = element.getString("tel_fixe");
-                siteweb = element.getString("siteweb");
-                imgUrl = element.getString("image_url");
-                facebook = element.getString("facebook");
-
-                editNom.setText(nom);
-                affichageEmail.setText(email);
-                editAdresse.setText(adresse);
-                editCP.setText(cp);
-                editVille.setText(ville);
-                editPays.setText(pays);
-                editMobile.setText(telportable);
-                editFixe.setText(telfixe);
-                editSiteweb.setText(siteweb);
-                editImage.setText(imgUrl);
-                editFacebook.setText(facebook);
-                editMdp.setText(password);
-            }
-            is.close();
-
-            result = total.toString();
-
-            if (result.equals(null) || result.equals("[]")) {
-                msg = "Erreur de lecture";
-                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-            }
-
-        } catch (Exception e) {
-            Log.i("tagconvertstr", "" + e.toString());
-        }
+       new ReadProfilTask().execute(id);
         // On met un Listener sur le bouton Artist
         btnSave.setOnClickListener(new View.OnClickListener() {
 
@@ -191,16 +109,26 @@ public class EditEtablissementProfilActivity extends Activity {
                 nameValuePairs.add(new BasicNameValuePair("facebook", facebook));
                 nameValuePairs.add(new BasicNameValuePair("password", password));
 
-                String emailvalid = "ok";
+                String emailvalid="ok";
 
-                if (email != "") {
-                    if (checkEmail(email, confirmEmail)) {
-                        emailvalid = "ok";
-                        nameValuePairs.add(new BasicNameValuePair("email", email));
-                    } else {
-                        emailvalid = "no";
+                if(email!="") {
+                    if(test.checkEmailWriting(email)) {
+
+                        if (test.checkEmail(email, confirmEmail)) {
+                            emailvalid="ok";
+                            nameValuePairs.add(new BasicNameValuePair("email", email));
+                        }
+                        else {
+                            emailvalid="no";
+                            msg = "Veuillez écrire correctement l'email et la confirmation d'e-mail";
+                        }
+                    } else
+                    {
+                        emailvalid ="no";
+                        msg = "Veuillez écrire un email correct.";
                     }
-                } else {
+
+                }else {
                     email = "" + affichageEmail.getText().toString();
                     nameValuePairs.add(new BasicNameValuePair("email", email));
                 }
@@ -239,27 +167,111 @@ public class EditEtablissementProfilActivity extends Activity {
                         Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                     }
                 }else {
-                    msg = "Veuillez écrire correctement la confirmation d'email";
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-
                 }
             }
         });
 
     }
-    private Boolean checkEmail(String email, String confirmEmail) {
-        Boolean verif;
-        if(email.equals(confirmEmail))
-        {
-            msg="VERIF EMAIL OK";
-            verif=true;
+    private class ReadProfilTask extends AsyncTask<Integer, Void, InputStream>
+    {
+        @Override
+        protected InputStream doInBackground(Integer... params) {
+
+            //tag récupération des informations de profil établissement
+            String tag = "read_EtablissementProfil";
+            InputStream is = null;
+            //setting nameValuePairs
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            //adding string variables into the NameValuePairs
+            nameValuePairs.add(new BasicNameValuePair("tag", tag));
+            nameValuePairs.add(new BasicNameValuePair("id_user", id_user));
+            //Toast.makeText(getApplicationContext(), id_user, Toast.LENGTH_LONG).show();
+            try {
+                //Setting up the default http client
+                HttpClient httpClient = new DefaultHttpClient();
+
+                //setting up the http post method
+                HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
+
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                //getting the response
+                HttpResponse response = httpClient.execute(httpPost);
+
+                //setting up the entity
+                HttpEntity entity = response.getEntity();
+
+                //setting up the content inside the input stream reader
+                is = entity.getContent();
+
+            } catch (ClientProtocolException e) {
+
+                Log.e("ClientProtocole", "Log_tag");
+                msg = "Erreur client protocole";
+
+            } catch (IOException e) {
+                Log.e("Log_tag", "IOException");
+                e.printStackTrace();
+                msg = "Erreur IOException";
+            }
+            return is;
         }
-        else {
-            msg="VERIF EMAIL NON OK";
-            verif=false;
+        protected void onProgressUpdate(Void params) {
         }
-        return verif;
+
+        protected void onPostExecute(InputStream is) {
+                int i;
+            String result = null;
+            try {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        StringBuilder total = new StringBuilder();
+        String json = reader.readLine();
+        JSONTokener tokener = new JSONTokener(json);
+        JSONArray finalResult = new JSONArray(tokener);
+
+        // Access by key : value
+        for (i = 0; i < finalResult.length(); i++) {
+            JSONObject element = finalResult.getJSONObject(0);
+
+            email = element.getString("email");
+            adresse = element.getString("adresse");
+            cp = element.getString("code_postal");
+            nom = element.getString("nom");
+            ville = element.getString("ville");
+            pays = element.getString("pays");
+            telportable = element.getString("tel_portable");
+            telfixe = element.getString("tel_fixe");
+            siteweb = element.getString("siteweb");
+            imgUrl = element.getString("image_url");
+            facebook = element.getString("facebook");
+
+            editNom.setText(nom);
+            affichageEmail.setText(email);
+            editAdresse.setText(adresse);
+            editCP.setText(cp);
+            editVille.setText(ville);
+            editPays.setText(pays);
+            editMobile.setText(telportable);
+            editFixe.setText(telfixe);
+            editSiteweb.setText(siteweb);
+            editImage.setText(imgUrl);
+            editFacebook.setText(facebook);
+            editMdp.setText(password);
+        }
+        is.close();
+
+        result = total.toString();
+
+        if (result.equals(null) || result.equals("[]")) {
+            msg = "Erreur de lecture";
+            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+        }
+
+    } catch (Exception e) {
+        Log.i("tagconvertstr", "" + e.toString());
     }
+        }
 
-
+    }
 }

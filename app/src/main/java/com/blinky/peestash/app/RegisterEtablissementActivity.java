@@ -32,6 +32,7 @@ public class RegisterEtablissementActivity extends Activity {
     EditText etName, etEmail, etConfirmEmail, etPassword, etConfirmMdp;
     Button btSubmit;
     String nom, email, confirmEmail, password, confirmPassword, tag, msg;
+    Verify test = new Verify();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,16 +72,23 @@ public class RegisterEtablissementActivity extends Activity {
 
                 String emailvalid = "ok";
 
-                if (email != "") {
-                    if (checkEmail(email, confirmEmail)) {
+                if(test.checkEmailWriting(email))
+                {
+                    if(test.checkEmail(email, confirmEmail))
+                    {
                         emailvalid = "ok";
                         nameValuePairs.add(new BasicNameValuePair("email", email));
-                    } else {
+                    } else
+                    {
                         emailvalid = "no";
+                        msg = "Veuillez écrire l'email et la confirmation d'email correctement";
                     }
-                } else {
+                } else
+                {
                     emailvalid = "no";
+                    msg = "Veuillez écrire un email valide";
                 }
+
                 if (emailvalid == "ok") {
                     //setting the connection to the database
                     try {
@@ -116,26 +124,9 @@ public class RegisterEtablissementActivity extends Activity {
                     }
 
                 }else {
-                    msg = "Veuillez écrire correctement la confirmation d'email";
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
-
-    private boolean checkEmail(String email, String confirmEmail) {
-        Boolean verif;
-        //function pr verif email et confirmation d'email identiques
-        if(email.equals(confirmEmail))
-        {
-            msg="VERIF EMAIL OK";
-            verif=true;
-        }
-        else {
-            msg="VERIF EMAIL NON OK";
-            verif=false;
-        }
-        return verif;
-    }
-
 }

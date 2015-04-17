@@ -32,6 +32,8 @@ public class RegisterArtistActivity extends Activity {
     EditText etPseudo, etEmail, etConfirmEmail, etPassword, etConfirmMdp;
     Button btSubmit;
     String pseudo, email, confirmEmail, password, confirmPassword, tag, msg;
+    Verify test = new Verify();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,9 +47,11 @@ public class RegisterArtistActivity extends Activity {
         etPassword = (EditText) findViewById(R.id.editPassword);
         btSubmit = (Button) findViewById(R.id.btregister);
 
+
         // On met un Listener sur le bouton
         btSubmit.setOnClickListener(new OnClickListener() {
             InputStream is = null;
+
 
             @Override
             public void onClick(View arg0) {
@@ -70,16 +74,23 @@ public class RegisterArtistActivity extends Activity {
 
                 String emailvalid = "ok";
 
-                if (email != "") {
-                    if (checkEmail(email, confirmEmail)) {
-                        emailvalid = "ok";
-                        nameValuePairs.add(new BasicNameValuePair("email", email));
-                    } else {
+                    if(test.checkEmailWriting(email))
+                    {
+                        if(test.checkEmail(email, confirmEmail))
+                        {
+                            emailvalid = "ok";
+                            nameValuePairs.add(new BasicNameValuePair("email", email));
+                        } else
+                        {
+                            emailvalid = "no";
+                            msg = "Veuillez écrire l'email et la confirmation d'email correctement";
+                        }
+                    } else
+                    {
                         emailvalid = "no";
+                        msg = "Veuillez écrire correctement votre email";
                     }
-                } else {
-                    emailvalid = "no";
-                }
+
                 if (emailvalid == "ok") {
                     //setting the connection to the database
                     try {
@@ -115,7 +126,6 @@ public class RegisterArtistActivity extends Activity {
                     }
 
                 }else {
-                    msg = "Veuillez écrire correctement la confirmation d'email";
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 
                 }
@@ -124,21 +134,5 @@ public class RegisterArtistActivity extends Activity {
         });
 
     }
-
-    private boolean checkEmail(String email, String confirmEmail) {
-            Boolean verif;
-            //function pr verif email et confirmation d'email identiques
-            if(email.equals(confirmEmail))
-            {
-                msg="VERIF EMAIL OK";
-                verif=true;
-            }
-            else {
-                msg="VERIF EMAIL NON OK";
-                verif=false;
-            }
-            return verif;
-    }
-
 
 }

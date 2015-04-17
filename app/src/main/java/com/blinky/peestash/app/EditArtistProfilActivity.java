@@ -1,6 +1,7 @@
 package com.blinky.peestash.app;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -36,7 +37,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
     private EditText editPseudo, editEmail, editConfirmEmail, editAdress, editCP, editNom, editPrenom, editVille, editPays, editTelMobile,
             editTelFixe, editSoundcloud, editSiteweb, editImgUrl, editPassword, editConfirmMdp;
     TextView affichageEmail;
-
+    int i;
     private Button btnSave;
     private String pseudo = "", nom = "", prenom = "", age = "", email = "", confirmEmail="", ville = "", adresse = "", cp = "", pays = "",
             telportable = "", telfixe = "", dispo = "", soundcloud = "", siteweb = "", imgUrl = "", genre_musical = "", password = "", confirmMdp="";
@@ -45,6 +46,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
 
     private ArrayList<String> genrelist = new ArrayList<String>();
     private ArrayList<String> dispolist = new ArrayList<String>();
+    Verify test = new Verify();
     String msg="";
 
     @Override
@@ -56,13 +58,12 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
         Spinner spinnerAge = (Spinner) findViewById(R.id.spinnerAge);
         // Spinner Drop down elements
         List<String> categories = new ArrayList<String>();
-        int i, pos;
+
         // Creating adapter for spinner
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories);
 
-        String result = null;
         //tag récupération des informations de profil artiste
-        String tag = "read_ArtistProfil";
+
         Bundle var = this.getIntent().getExtras();
         id_user = var.getString("id_user");
         affichageEmail = (TextView) findViewById(R.id.affichageEmail);
@@ -107,288 +108,133 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
         btnSave = (Button) findViewById(R.id.btnSave);
 
         addListenerOnChkWindows();
+        int id;
+        id=Integer.parseInt(id_user);
+        new ReadProfilTask().execute(id);
 
-        InputStream is = null;
-        //setting nameValuePairs
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-        //adding string variables into the NameValuePairs
-        nameValuePairs.add(new BasicNameValuePair("tag", tag));
-        nameValuePairs.add(new BasicNameValuePair("id_user", id_user));
-
-        //setting the connection to the database
-        try {
-            //Setting up the default http client
-            HttpClient httpClient = new DefaultHttpClient();
-
-            //setting up the http post method
-            HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-            //getting the response
-            HttpResponse response = httpClient.execute(httpPost);
-
-            //setting up the entity
-            HttpEntity entity = response.getEntity();
-
-            //setting up the content inside the input stream reader
-            is = entity.getContent();
-
-        } catch (ClientProtocolException e) {
-
-            Log.e("ClientProtocole", "Log_tag");
-            String msg = "Erreur client protocole";
-
-        } catch (IOException e) {
-            Log.e("Log_tag", "IOException");
-            e.printStackTrace();
-            String msg = "Erreur IOException";
-        }
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            StringBuilder total = new StringBuilder();
-            String json = reader.readLine();
-            JSONTokener tokener = new JSONTokener(json);
-            JSONArray finalResult = new JSONArray(tokener);
-
-            // Access by key : value
-            for (i = 0; i < finalResult.length(); i++) {
-                JSONObject element = finalResult.getJSONObject(0);
-
-                pseudo = element.getString("pseudo");
-                email = element.getString("email");
-                adresse = element.getString("adresse");
-                cp = element.getString("code_postal");
-                nom = element.getString("nom");
-                prenom = element.getString("prenom");
-                ville = element.getString("ville");
-                pays = element.getString("pays");
-                telportable = element.getString("tel_portable");
-                telfixe = element.getString("tel_fixe");
-                dispo = element.getString("disponibilites");
-                soundcloud = element.getString("soundcloud");
-                siteweb = element.getString("siteweb");
-                imgUrl = element.getString("image_url");
-                genre_musical = element.getString("genre_musical");
-                age = element.getString("age");
-
-                editNom.setText(nom);
-                editPrenom.setText(prenom);
-                editPseudo.setText(pseudo);
-                affichageEmail.setText(email);
-                editAdress.setText(adresse);
-                editCP.setText(cp);
-                editVille.setText(ville);
-                editPays.setText(pays);
-                editTelMobile.setText(telportable);
-                editTelFixe.setText(telfixe);
-                editSoundcloud.setText(soundcloud);
-                editSiteweb.setText(siteweb);
-                editImgUrl.setText(imgUrl);
-                editPassword.setText(password);
-
-                //verification et affichage des genres musicaux en bdd
-                pos = genre_musical.indexOf("rock");
-                if (pos != -1) {
-                    rock.setChecked(true);
-                    genrelist.add("rock");
-                }
-                pos = genre_musical.indexOf("pop");
-                if (pos != -1) {
-                    pop.setChecked(true);
-                    genrelist.add("pop");
-                }
-                pos = genre_musical.indexOf("metal");
-                if (pos != -1) {
-                    metal.setChecked(true);
-                    genrelist.add("metal");
-                }
-                pos = genre_musical.indexOf("folk");
-                if (pos != -1) {
-                    folk.setChecked(true);
-                    genrelist.add("folk");
-                }
-                pos = genre_musical.indexOf("funk");
-                if (pos != -1) {
-                    funk.setChecked(true);
-                    genrelist.add("funk");
-                }
-                pos = genre_musical.indexOf("classique");
-                if (pos != -1) {
-                    classique.setChecked(true);
-                    genrelist.add("classique");
-                }
-                pos = genre_musical.indexOf("rap");
-                if (pos != -1) {
-                    rap.setChecked(true);
-                    genrelist.add("rap");
-                }
-                pos = genre_musical.indexOf("electro");
-                if (pos != -1) {
-                    electro.setChecked(true);
-                    genrelist.add("electro");
-                }
-                pos = genre_musical.indexOf("jazz");
-                if (pos != -1) {
-                    jazz.setChecked(true);
-                    genrelist.add("jazz");
-                }
-                pos = genre_musical.indexOf("blues");
-                if (pos != -1) {
-                    blues.setChecked(true);
-                    genrelist.add("blues");
-                }
-                //vérification et affichage des disponibilités en bdd
-                pos = dispo.indexOf("lundi");
-                if (pos != -1) {
-                    lundi.setChecked(true);
-                    dispolist.add("lundi");
-                }
-                pos = dispo.indexOf("mardi");
-                if (pos != -1) {
-                    mardi.setChecked(true);
-                    dispolist.add("mardi");
-                }
-                pos = dispo.indexOf("mercredi");
-                if (pos != -1) {
-                    mercredi.setChecked(true);
-                    dispolist.add("mercredi");
-                }
-                pos = dispo.indexOf("jeudi");
-                if (pos != -1) {
-                    jeudi.setChecked(true);
-                    dispolist.add("jeudi");
-                }
-                pos = dispo.indexOf("vendredi");
-                if (pos != -1) {
-                    vendredi.setChecked(true);
-                    dispolist.add("vendredi");
-                }
-                pos = dispo.indexOf("samedi");
-                if (pos != -1) {
-                    samedi.setChecked(true);
-                    dispolist.add("samedi");
-                }
-                pos = dispo.indexOf("dimanche");
-                if (pos != -1) {
-                    dimanche.setChecked(true);
-                    dispolist.add("dimanche");
-                }
-            }
-            is.close();
-
-            result = total.toString();
-
-            if (result.equals(null) || result.equals("[]")) {
-                String msg = "Erreur de lecture";
-                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-            }
-
-        } catch (Exception e) {
-            Log.i("tagconvertstr", "" + e.toString());
-        }
         // On met un Listener sur le bouton Artist
         btnSave.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
-                //update datas in database
-                InputStream is = null;
-                String result = null;
-                String tag = "update_ArtistProfil";
 
-                nom = "" + editNom.getText().toString();
-                prenom = "" + editPrenom.getText().toString();
-                pseudo = "" + editPseudo.getText().toString();
-                email = "" + editEmail.getText().toString();
-                confirmEmail = "" + editConfirmEmail.getText().toString();
-                adresse = "" + editAdress.getText().toString();
-                cp = "" + editCP.getText().toString();
-                ville = "" + editVille.getText().toString();
-                pays = "" + editPays.getText().toString();
-                telfixe = "" + editTelFixe.getText().toString();
-                telportable = "" + editTelMobile.getText().toString();
-                dispo = "" + dispolist.toString();
-                soundcloud = "" + editSoundcloud.getText().toString();
-                siteweb = "" + editSiteweb.getText().toString();
-                imgUrl = "" + editImgUrl.getText().toString();
-                age = "" + age;
-                genre_musical = "" + genrelist.toString();
-                password = "" + editPassword.getText().toString();
+                new Thread(new Runnable() {
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
 
-                //setting nameValuePairs
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-                //adding string variables into the NameValuePairs
-                nameValuePairs.add(new BasicNameValuePair("tag", tag));
-                nameValuePairs.add(new BasicNameValuePair("id", id_user));
-                nameValuePairs.add(new BasicNameValuePair("nom", nom));
-                nameValuePairs.add(new BasicNameValuePair("prenom", prenom));
-                nameValuePairs.add(new BasicNameValuePair("pseudo", pseudo));
-                nameValuePairs.add(new BasicNameValuePair("adresse", adresse));
-                nameValuePairs.add(new BasicNameValuePair("code_postal", cp));
-                nameValuePairs.add(new BasicNameValuePair("ville", ville));
-                nameValuePairs.add(new BasicNameValuePair("pays", pays));
-                nameValuePairs.add(new BasicNameValuePair("tel_fixe", telfixe));
-                nameValuePairs.add(new BasicNameValuePair("tel_portable", telportable));
-                nameValuePairs.add(new BasicNameValuePair("disponibilites", dispo));
-                nameValuePairs.add(new BasicNameValuePair("soundcloud", soundcloud));
-                nameValuePairs.add(new BasicNameValuePair("siteweb", siteweb));
-                nameValuePairs.add(new BasicNameValuePair("image_url", imgUrl));
-                nameValuePairs.add(new BasicNameValuePair("age", age));
-                nameValuePairs.add(new BasicNameValuePair("genre_musical", genre_musical));
-                nameValuePairs.add(new BasicNameValuePair("password", password));
+                                //update datas in database
+                                InputStream is = null;
+                                String result = null;
+                                String tag = "update_ArtistProfil";
 
-                String emailvalid="ok";
+                                nom = "" + editNom.getText().toString();
+                                prenom = "" + editPrenom.getText().toString();
+                                pseudo = "" + editPseudo.getText().toString();
+                                email = "" + editEmail.getText().toString();
+                                confirmEmail = "" + editConfirmEmail.getText().toString();
+                                adresse = "" + editAdress.getText().toString();
+                                cp = "" + editCP.getText().toString();
+                                ville = "" + editVille.getText().toString();
+                                pays = "" + editPays.getText().toString();
+                                telfixe = "" + editTelFixe.getText().toString();
+                                telportable = "" + editTelMobile.getText().toString();
+                                dispo = "" + dispolist.toString();
+                                soundcloud = "" + editSoundcloud.getText().toString();
+                                siteweb = "" + editSiteweb.getText().toString();
+                                imgUrl = "" + editImgUrl.getText().toString();
+                                age = "" + age;
+                                genre_musical = "" + genrelist.toString();
+                                password = "" + editPassword.getText().toString();
 
-                if(email!="") {
-                    if (checkEmail(email, confirmEmail)) {
-                        emailvalid="ok";
-                        nameValuePairs.add(new BasicNameValuePair("email", email));
+                                //setting nameValuePairs
+                                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+                                //adding string variables into the NameValuePairs
+                                nameValuePairs.add(new BasicNameValuePair("tag", tag));
+                                nameValuePairs.add(new BasicNameValuePair("id", id_user));
+                                nameValuePairs.add(new BasicNameValuePair("nom", nom));
+                                nameValuePairs.add(new BasicNameValuePair("prenom", prenom));
+                                nameValuePairs.add(new BasicNameValuePair("pseudo", pseudo));
+                                nameValuePairs.add(new BasicNameValuePair("adresse", adresse));
+                                nameValuePairs.add(new BasicNameValuePair("code_postal", cp));
+                                nameValuePairs.add(new BasicNameValuePair("ville", ville));
+                                nameValuePairs.add(new BasicNameValuePair("pays", pays));
+                                nameValuePairs.add(new BasicNameValuePair("tel_fixe", telfixe));
+                                nameValuePairs.add(new BasicNameValuePair("tel_portable", telportable));
+                                nameValuePairs.add(new BasicNameValuePair("disponibilites", dispo));
+                                nameValuePairs.add(new BasicNameValuePair("soundcloud", soundcloud));
+                                nameValuePairs.add(new BasicNameValuePair("siteweb", siteweb));
+                                nameValuePairs.add(new BasicNameValuePair("image_url", imgUrl));
+                                nameValuePairs.add(new BasicNameValuePair("age", age));
+                                nameValuePairs.add(new BasicNameValuePair("genre_musical", genre_musical));
+                                nameValuePairs.add(new BasicNameValuePair("password", password));
+
+                                String emailvalid="ok";
+
+                                if(email!="") {
+                                    if(test.checkEmailWriting(email)) {
+
+                                        if (test.checkEmail(email, confirmEmail)) {
+                                            emailvalid="ok";
+                                            nameValuePairs.add(new BasicNameValuePair("email", email));
+                                        }
+                                        else {
+                                            emailvalid="no";
+                                            msg = "Veuillez écrire correctement l'email et la confirmation d'e-mail";
+                                        }
+                                    } else
+                                    {
+                                        emailvalid ="no";
+                                        msg = "Veuillez écrire un email correct.";
+                                    }
+
+                                }else {
+                                    email = "" + affichageEmail.getText().toString();
+                                    nameValuePairs.add(new BasicNameValuePair("email", email));
+                                }
+                                if(emailvalid=="ok") {
+                                    //setting the connection to the database
+                                    try {
+                                        //Setting up the default http client
+                                        HttpClient httpClient = new DefaultHttpClient();
+
+                                        //setting up the http post method
+                                        HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
+                                        httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                                        //getting the response
+                                        HttpResponse response = httpClient.execute(httpPost);
+
+                                        //setting up the entity
+                                        HttpEntity entity = response.getEntity();
+
+                                        //setting up the content inside the input stream reader
+                                        is = entity.getContent();
+
+                                        //displaying a toast message if the data is entered in the database
+                                        msg = "Données modifiées en BDD artist";
+                                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+
+                                    } catch (ClientProtocolException e) {
+                                        Log.e("ClientProtocole", "Log_tag");
+                                        msg = "Erreur client protocole";
+                                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                                    } catch (IOException e) {
+                                        Log.e("Log_tag", "IOException");
+                                        e.printStackTrace();
+                                        msg = "Erreur IOException";
+                                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                                    }
+                                }else {
+                                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+
+                                }
+                                      }
+                        });
+
                     }
-                    else {
-                        emailvalid="no";
-                    }
-                }else {
-                    email = "" + affichageEmail.getText().toString();
-                    nameValuePairs.add(new BasicNameValuePair("email", email));
-                }
-                if(emailvalid=="ok") {
-                    //setting the connection to the database
-                    try {
-                        //Setting up the default http client
-                        HttpClient httpClient = new DefaultHttpClient();
+                }).start();
 
-                        //setting up the http post method
-                        HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
-                        httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                        //getting the response
-                        HttpResponse response = httpClient.execute(httpPost);
-
-                        //setting up the entity
-                        HttpEntity entity = response.getEntity();
-
-                        //setting up the content inside the input stream reader
-                        is = entity.getContent();
-
-                        //displaying a toast message if the data is entered in the database
-                        msg = "Données modifiées en BDD artist";
-                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-
-                    } catch (ClientProtocolException e) {
-                        Log.e("ClientProtocole", "Log_tag");
-                        msg = "Erreur client protocole";
-                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        Log.e("Log_tag", "IOException");
-                        e.printStackTrace();
-                        msg = "Erreur IOException";
-                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                    }
-                }else {
-                    msg = "Veuillez écrire correctement la confirmation d'email";
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-
-                }
             }
 
         });
@@ -407,20 +253,6 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
 
         int posi = categories.indexOf(age);
         spinnerAge.setSelection(posi);
-    }
-
-    private Boolean checkEmail(String email, String confirmEmail) {
-        Boolean verif;
-        if(email.equals(confirmEmail))
-        {
-            msg="VERIF EMAIL OK";
-            verif=true;
-        }
-        else {
-            msg="VERIF EMAIL NON OK";
-            verif=false;
-        }
-        return verif;
     }
 
     public void addListenerOnChkWindows() {
@@ -687,6 +519,203 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+    private class ReadProfilTask extends AsyncTask<Integer, Void, InputStream> {
+        int i, pos;
+        String result = null;
+        String tag = "read_ArtistProfil";
+
+        protected InputStream doInBackground(Integer... id) {
+
+            InputStream is = null;
+            //setting nameValuePairs
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            //adding string variables into the NameValuePairs
+            nameValuePairs.add(new BasicNameValuePair("tag", tag));
+            nameValuePairs.add(new BasicNameValuePair("id_user", id_user));
+
+            //setting the connection to the database
+            try {
+                //Setting up the default http client
+                HttpClient httpClient = new DefaultHttpClient();
+
+                //setting up the http post method
+                HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                //getting the response
+                HttpResponse response = httpClient.execute(httpPost);
+
+                //setting up the entity
+                HttpEntity entity = response.getEntity();
+
+                //setting up the content inside the input stream reader
+                is = entity.getContent();
+
+            } catch (ClientProtocolException e) {
+
+                Log.e("ClientProtocole", "Log_tag");
+                String msg = "Erreur client protocole";
+
+            } catch (IOException e) {
+                Log.e("Log_tag", "IOException");
+                e.printStackTrace();
+                String msg = "Erreur IOException";
+            }
+
+            return is;
+        }
+
+        protected void onProgressUpdate(Void params) {
+        }
+
+        protected void onPostExecute(InputStream is) {
+
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                StringBuilder total = new StringBuilder();
+                String json = reader.readLine();
+                JSONTokener tokener = new JSONTokener(json);
+                JSONArray finalResult = new JSONArray(tokener);
+
+                // Access by key : value
+                for (i = 0; i < finalResult.length(); i++) {
+                    JSONObject element = finalResult.getJSONObject(0);
+
+                    pseudo = element.getString("pseudo");
+                    email = element.getString("email");
+                    adresse = element.getString("adresse");
+                    cp = element.getString("code_postal");
+                    nom = element.getString("nom");
+                    prenom = element.getString("prenom");
+                    ville = element.getString("ville");
+                    pays = element.getString("pays");
+                    telportable = element.getString("tel_portable");
+                    telfixe = element.getString("tel_fixe");
+                    dispo = element.getString("disponibilites");
+                    soundcloud = element.getString("soundcloud");
+                    siteweb = element.getString("siteweb");
+                    imgUrl = element.getString("image_url");
+                    genre_musical = element.getString("genre_musical");
+                    age = element.getString("age");
+
+                    editNom.setText(nom);
+                    editPrenom.setText(prenom);
+                    editPseudo.setText(pseudo);
+                    affichageEmail.setText(email);
+                    editAdress.setText(adresse);
+                    editCP.setText(cp);
+                    editVille.setText(ville);
+                    editPays.setText(pays);
+                    editTelMobile.setText(telportable);
+                    editTelFixe.setText(telfixe);
+                    editSoundcloud.setText(soundcloud);
+                    editSiteweb.setText(siteweb);
+                    editImgUrl.setText(imgUrl);
+                    editPassword.setText(password);
+
+                    //verification et affichage des genres musicaux en bdd
+                    pos = genre_musical.indexOf("rock");
+                    if (pos != -1) {
+                        rock.setChecked(true);
+                        genrelist.add("rock");
+                    }
+                    pos = genre_musical.indexOf("pop");
+                    if (pos != -1) {
+                        pop.setChecked(true);
+                        genrelist.add("pop");
+                    }
+                    pos = genre_musical.indexOf("metal");
+                    if (pos != -1) {
+                        metal.setChecked(true);
+                        genrelist.add("metal");
+                    }
+                    pos = genre_musical.indexOf("folk");
+                    if (pos != -1) {
+                        folk.setChecked(true);
+                        genrelist.add("folk");
+                    }
+                    pos = genre_musical.indexOf("funk");
+                    if (pos != -1) {
+                        funk.setChecked(true);
+                        genrelist.add("funk");
+                    }
+                    pos = genre_musical.indexOf("classique");
+                    if (pos != -1) {
+                        classique.setChecked(true);
+                        genrelist.add("classique");
+                    }
+                    pos = genre_musical.indexOf("rap");
+                    if (pos != -1) {
+                        rap.setChecked(true);
+                        genrelist.add("rap");
+                    }
+                    pos = genre_musical.indexOf("electro");
+                    if (pos != -1) {
+                        electro.setChecked(true);
+                        genrelist.add("electro");
+                    }
+                    pos = genre_musical.indexOf("jazz");
+                    if (pos != -1) {
+                        jazz.setChecked(true);
+                        genrelist.add("jazz");
+                    }
+                    pos = genre_musical.indexOf("blues");
+                    if (pos != -1) {
+                        blues.setChecked(true);
+                        genrelist.add("blues");
+                    }
+                    //vérification et affichage des disponibilités en bdd
+                    pos = dispo.indexOf("lundi");
+                    if (pos != -1) {
+                        lundi.setChecked(true);
+                        dispolist.add("lundi");
+                    }
+                    pos = dispo.indexOf("mardi");
+                    if (pos != -1) {
+                        mardi.setChecked(true);
+                        dispolist.add("mardi");
+                    }
+                    pos = dispo.indexOf("mercredi");
+                    if (pos != -1) {
+                        mercredi.setChecked(true);
+                        dispolist.add("mercredi");
+                    }
+                    pos = dispo.indexOf("jeudi");
+                    if (pos != -1) {
+                        jeudi.setChecked(true);
+                        dispolist.add("jeudi");
+                    }
+                    pos = dispo.indexOf("vendredi");
+                    if (pos != -1) {
+                        vendredi.setChecked(true);
+                        dispolist.add("vendredi");
+                    }
+                    pos = dispo.indexOf("samedi");
+                    if (pos != -1) {
+                        samedi.setChecked(true);
+                        dispolist.add("samedi");
+                    }
+                    pos = dispo.indexOf("dimanche");
+                    if (pos != -1) {
+                        dimanche.setChecked(true);
+                        dispolist.add("dimanche");
+                    }
+                }
+                is.close();
+
+                result = total.toString();
+
+                if (result.equals(null) || result.equals("[]")) {
+                    String msg = "Erreur de lecture";
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                }
+
+            } catch (Exception e) {
+                Log.i("tagconvertstr", "" + e.toString());
+            }
+
+        }
     }
 
 }

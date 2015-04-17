@@ -71,107 +71,121 @@ public class LoginActivity extends Activity {
         // On met un Listener sur le bouton Se Connecter
         btConnect.setOnClickListener(new OnClickListener() {
 
+
             InputStream is = null;
+            //création d'un nouveau thread pour la connexion vers la BDD
 
-            @Override
-            public void onClick(View arg0) {
-                //put the editText value into string variables
-                String email = ""+etEmail.getText().toString();
-                String password = ""+etPassword.getText().toString();
-                String result = null;
-                //tag Connexion
-                String tag = "connexion";
+            public void onClick(View v) {
+                new Thread(new Runnable() {
+                    public void run() {
 
-                //setting nameValuePairs
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-                //adding string variables into the NameValuePairs
-                nameValuePairs.add(new BasicNameValuePair("email", email));
-                nameValuePairs.add(new BasicNameValuePair("password", password));
-                nameValuePairs.add(new BasicNameValuePair("tag", tag));
+                        //put the editText value into string variables
+                        String email = ""+etEmail.getText().toString();
+                        String password = ""+etPassword.getText().toString();
+                        String result = null;
+                        //tag Connexion
+                        String tag = "connexion";
 
-                //setting the connection to the database
-                try{
-                    //Setting up the default http client
-                    HttpClient httpClient = new DefaultHttpClient();
+                        //setting nameValuePairs
+                        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+                        //adding string variables into the NameValuePairs
+                        nameValuePairs.add(new BasicNameValuePair("email", email));
+                        nameValuePairs.add(new BasicNameValuePair("password", password));
+                        nameValuePairs.add(new BasicNameValuePair("tag", tag));
 
-                    //setting up the http post method
-                    HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
-                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                        //setting the connection to the database
+                        try{
+                            //Setting up the default http client
+                            HttpClient httpClient = new DefaultHttpClient();
 
-                    //getting the response
-                    HttpResponse response = httpClient.execute(httpPost);
+                            //setting up the http post method
+                            HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
+                            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-                    //setting up the entity
-                    HttpEntity entity = response.getEntity();
+                            //getting the response
+                            HttpResponse response = httpClient.execute(httpPost);
 
-                    //setting up the content inside the input stream reader
-                    is = entity.getContent();
+                            //setting up the entity
+                            HttpEntity entity = response.getEntity();
 
-                }catch(ClientProtocolException e){
+                            //setting up the content inside the input stream reader
+                            is = entity.getContent();
 
-                    Log.e("ClientProtocole", "Log_tag");
-                    String msg = "Erreur client protocole";
+                        }catch(ClientProtocolException e){
 
-                }catch(IOException e)
-                {
-                    Log.e("Log_tag", "IOException");
-                    e.printStackTrace();
-                    String msg = "Erreur IOException";
-                }
-                try{
-                    BufferedReader reader= new BufferedReader(new InputStreamReader(is,"UTF-8"));
-                    StringBuilder total = new StringBuilder();
+                            Log.e("ClientProtocole", "Log_tag");
+                            String msg = "Erreur client protocole";
 
-                    String line;
-
-                    while ((line = reader.readLine()) != null) {
-                        total.append(line);
-                    }
-
-                    is.close();
-
-                    result= total.toString();
-
-
-                    if(result.equals(null) || result.equals("[]"))
-                    {
-                        String msg="Erreur de connexion";
-                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                    }
-                    else {
-
-                        String id = result.substring(7,11);
-                        id = id.replace("\"","");
-                        id = id.replace(",","");
-                        id=id.trim();
-
-                        if(result.indexOf("artiste")!=-1) {
-
-                            String msg = "Vous êtes connecté en tant qu'artiste \n id =" + id + "\n";
-                            //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                            Intent i = new Intent(LoginActivity.this, ArtistHomeActivity.class);
-                            i.putExtra("id_user", id);
-                            startActivity(i);
-
+                        }catch(IOException e)
+                        {
+                            Log.e("Log_tag", "IOException");
+                            e.printStackTrace();
+                            String msg = "Erreur IOException";
                         }
-                        else if(result.indexOf("etablissement")!=-1) {
+                        try{
+                            BufferedReader reader= new BufferedReader(new InputStreamReader(is,"UTF-8"));
+                            StringBuilder total = new StringBuilder();
 
-                         // String msg = "Vous êtes connecté en tant qu'établissement \n id =" + id + "\n";
+                            String line;
 
-                           // Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                            Intent i = new Intent(LoginActivity.this, EtablissementHomeActivity.class);
-                            i.putExtra("id_user", id);
-                            startActivity(i);
+                            while ((line = reader.readLine()) != null) {
+                                total.append(line);
+                            }
+
+                            is.close();
+
+                            result= total.toString();
+
+
+                            if(result.equals(null) || result.equals("[]"))
+                            {
+                                new Thread(new Runnable() {
+                                    public void run() {
+                                        runOnUiThread(new Runnable() {
+                                            public void run() {
+                                                String msg = "Erreur de connexion";
+                                                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+
+                                            }
+                                        });
+                                       }
+                                }).start();
+                            }
+                            else {
+
+                                String id = result.substring(7,11);
+                                id = id.replace("\"","");
+                                id = id.replace(",","");
+                                id=id.trim();
+
+                                if(result.indexOf("artiste")!=-1) {
+
+                                    String msg = "Vous êtes connecté en tant qu'artiste \n id =" + id + "\n";
+                                    //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                                    Intent i = new Intent(LoginActivity.this, ArtistHomeActivity.class);
+                                    i.putExtra("id_user", id);
+                                    startActivity(i);
+
+                                }
+                                else if(result.indexOf("etablissement")!=-1) {
+
+                                    // String msg = "Vous êtes connecté en tant qu'établissement \n id =" + id + "\n";
+
+                                    // Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                                    Intent i = new Intent(LoginActivity.this, EtablissementHomeActivity.class);
+                                    i.putExtra("id_user", id);
+                                    startActivity(i);
+                                }
+
+
+                            }
+                        } catch (Exception e) {
+                            Log.i("tagconvertstr", "" + e.toString());
                         }
-
-
                     }
-                } catch (Exception e) {
-                    Log.i("tagconvertstr", "" + e.toString());
-                }
+                }).start();
             }
         });
-
     }
 
 }
