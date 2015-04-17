@@ -1,6 +1,7 @@
 package com.blinky.peestash.app;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,7 +40,9 @@ public class EditEtablissementProfilActivity extends Activity {
     private String nom ="", email ="", confirmEmail="", ville ="", adresse ="", cp ="", pays ="",
             telportable ="", telfixe ="", siteweb ="", imgUrl ="", password ="", confirmMdp="", facebook="";
     String msg="";
+    ProgressDialog progress;
     Verify test = new Verify();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,6 +223,13 @@ public class EditEtablissementProfilActivity extends Activity {
         protected void onProgressUpdate(Void params) {
         }
 
+        protected void onPreExecute() {
+            progress = new ProgressDialog(EditEtablissementProfilActivity.this);
+            progress.setMessage("Chargement de vos informations de profil...");
+            progress.show();
+        }
+
+
         protected void onPostExecute(InputStream is) {
                 int i;
             String result = null;
@@ -271,6 +281,9 @@ public class EditEtablissementProfilActivity extends Activity {
     } catch (Exception e) {
         Log.i("tagconvertstr", "" + e.toString());
     }
+            if (progress.isShowing()) {
+                progress.dismiss();
+            }
         }
 
     }
