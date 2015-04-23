@@ -2,12 +2,16 @@ package com.blinky.peestash.app;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -34,11 +38,12 @@ import android.view.View.OnClickListener;
 
 public class EditArtistProfilActivity extends Activity implements AdapterView.OnItemSelectedListener {
 
-    String id_user = "";
+    String id_user = "", type="";
     private EditText editPseudo, editEmail, editConfirmEmail, editAdress, editCP, editNom, editPrenom, editVille, editPays, editTelMobile,
-            editTelFixe, editSoundcloud, editSiteweb, editImgUrl, editPassword, editConfirmMdp;
+            editTelFixe, editSoundcloud, editSiteweb, editPassword, editConfirmMdp;
     TextView affichageEmail;
     int i;
+    ImageView img;
     private Button btnSave;
     private String pseudo = "", nom = "", prenom = "", age = "", email = "", confirmEmail="", ville = "", adresse = "", cp = "", pays = "",
             telportable = "", telfixe = "", dispo = "", soundcloud = "", siteweb = "", imgUrl = "", genre_musical = "", password = "", confirmMdp="";
@@ -50,19 +55,24 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
     Verify test = new Verify();
     String msg="";
     ProgressDialog progress;
+    List<String> categories;
+    ArrayAdapter<String> dataAdapter;
+    Spinner spinnerAge;
+    private WebView wv;
 
+    String html;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_artist_profil);
 
         // Spinner element
-        Spinner spinnerAge = (Spinner) findViewById(R.id.spinnerAge);
+        spinnerAge = (Spinner) findViewById(R.id.spinnerAge);
         // Spinner Drop down elements
-        List<String> categories = new ArrayList<String>();
+        categories = new ArrayList<String>();
 
         // Creating adapter for spinner
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories);
+        dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories);
 
         //tag récupération des informations de profil artiste
 
@@ -83,7 +93,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
         editTelFixe = (EditText) findViewById(R.id.editTelFixe);
         editSoundcloud = (EditText) findViewById(R.id.editSoundcloud);
         editSiteweb = (EditText) findViewById(R.id.editSiteweb);
-        editImgUrl = (EditText) findViewById(R.id.editImageUrl);
+        img = (ImageView) findViewById(R.id.img);
         editPassword = (EditText) findViewById(R.id.editPassword);
 
         //récupération des checkbox genres musicaux
@@ -113,6 +123,10 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
         int id;
         id=Integer.parseInt(id_user);
         new ReadProfilTask().execute(id);
+
+
+        wv = (WebView)findViewById(R.id.webView);
+
 
         // On met un Listener sur le bouton Artist
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -144,7 +158,6 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                                 dispo = "" + dispolist.toString();
                                 soundcloud = "" + editSoundcloud.getText().toString();
                                 siteweb = "" + editSiteweb.getText().toString();
-                                imgUrl = "" + editImgUrl.getText().toString();
                                 age = "" + age;
                                 genre_musical = "" + genrelist.toString();
                                 password = "" + editPassword.getText().toString();
@@ -166,7 +179,6 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                                 nameValuePairs.add(new BasicNameValuePair("disponibilites", dispo));
                                 nameValuePairs.add(new BasicNameValuePair("soundcloud", soundcloud));
                                 nameValuePairs.add(new BasicNameValuePair("siteweb", siteweb));
-                                nameValuePairs.add(new BasicNameValuePair("image_url", imgUrl));
                                 nameValuePairs.add(new BasicNameValuePair("age", age));
                                 nameValuePairs.add(new BasicNameValuePair("genre_musical", genre_musical));
                                 nameValuePairs.add(new BasicNameValuePair("password", password));
@@ -249,12 +261,26 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
         }
         // Drop down layout style - list view with radio button
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        Button btn = (Button) findViewById(R.id.btnImage);
 
-        // attaching data adapter to spinner
-        spinnerAge.setAdapter(dataAdapter);
+        View.OnClickListener listnr = new View.OnClickListener() {
+            public void onClick(View v) {
+                new Thread(new Runnable() {
+                    public void run() {
+                        type="artiste";
+                        Intent i = new Intent(EditArtistProfilActivity.this, UploadActivity.class);
+                        i.putExtra("id_user", id_user);
+                        i.putExtra("type", type);
+                        startActivity(i);
 
-        int posi = categories.indexOf(age);
-        spinnerAge.setSelection(posi);
+                    }
+                }).start();
+            }
+
+        };
+
+        btn.setOnClickListener(listnr);
+
     }
 
     public void addListenerOnChkWindows() {
@@ -522,6 +548,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
     public void onNothingSelected(AdapterView<?> parent) {
 
     }
+
     private class ReadProfilTask extends AsyncTask<Integer, Void, InputStream> {
         int i, pos;
         String result = null;
@@ -585,6 +612,10 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                 String json = reader.readLine();
                 JSONTokener tokener = new JSONTokener(json);
                 JSONArray finalResult = new JSONArray(tokener);
+                Bitmap imgurl;
+
+                // Spinner element
+                spinnerAge = (Spinner) findViewById(R.id.spinnerAge);
 
                 // Access by key : value
                 for (i = 0; i < finalResult.length(); i++) {
@@ -607,6 +638,10 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                     genre_musical = element.getString("genre_musical");
                     age = element.getString("age");
 
+                    InputStream in = new java.net.URL(imgUrl).openStream();
+                    imgurl = BitmapFactory.decodeStream(in);
+                    img.setImageBitmap(imgurl);
+
                     editNom.setText(nom);
                     editPrenom.setText(prenom);
                     editPseudo.setText(pseudo);
@@ -619,7 +654,6 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                     editTelFixe.setText(telfixe);
                     editSoundcloud.setText(soundcloud);
                     editSiteweb.setText(siteweb);
-                    editImgUrl.setText(imgUrl);
                     editPassword.setText(password);
 
                     //verification et affichage des genres musicaux en bdd
@@ -709,7 +743,17 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                         dimanche.setChecked(true);
                         dispolist.add("dimanche");
                     }
+
                 }
+                html="<iframe width=\"100%\" height=\"450\" scrolling=\"yes\" frameborder=\"yes\" src=\"https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/"+soundcloud+"&amp;auto_play=false&amp;hide_related=true&amp;show_comments=false&amp;show_user=false&amp;show_reposts=false&amp;visual=false\"></iframe>";
+                wv.getSettings().setJavaScriptEnabled(true);
+                wv.loadDataWithBaseURL("", html , "text/html",  "UTF-8", "");
+                // attaching data adapter to spinner
+                spinnerAge.setAdapter(dataAdapter);
+
+                int posi = categories.indexOf(age);
+                spinnerAge.setSelection(posi);
+
                 is.close();
 
                 result = total.toString();

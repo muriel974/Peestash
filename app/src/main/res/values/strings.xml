@@ -20,4 +20,5 @@
     <string name="title_activity_edit_artist_profil">EditArtistProfilActivity</string>
     <string name="title_activity_liste_deroulante">ListeDeroulanteActivity</string>
     <string name="title_activity_edit_etablissement_profil">EditEtablissementProfilActivity</string>
+    <string name="title_activity_upload">UploadActivity</string>
 </resources>

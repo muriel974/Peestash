@@ -2,11 +2,12 @@ package com.blinky.peestash.app;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import org.apache.http.HttpEntity;
@@ -32,15 +33,16 @@ import java.util.List;
 
 public class EditEtablissementProfilActivity extends Activity {
 
-    String id_user = "";
+    String id_user = "", type="";
     private EditText editNom, editAdresse, editCP, editVille, editPays, editMobile,
-            editFixe, editSiteweb, editImage, editMdp, editFacebook, editConfirmMdp, editEmail, editConfirmEmail;
+            editFixe, editSiteweb, editMdp, editFacebook, editConfirmMdp, editEmail, editConfirmEmail;
     TextView affichageEmail;
     private Button btnSave;
     private String nom ="", email ="", confirmEmail="", ville ="", adresse ="", cp ="", pays ="",
             telportable ="", telfixe ="", siteweb ="", imgUrl ="", password ="", confirmMdp="", facebook="";
     String msg="";
     ProgressDialog progress;
+    ImageView img;
     Verify test = new Verify();
 
 
@@ -63,8 +65,8 @@ public class EditEtablissementProfilActivity extends Activity {
         editMobile = (EditText) findViewById(R.id.editMobile);
         editFixe = (EditText) findViewById(R.id.editFixe);
         editSiteweb = (EditText) findViewById(R.id.editSiteweb);
-        editImage = (EditText) findViewById(R.id.editImage);
-        editFacebook = (EditText) findViewById(R.id.editFacebook);
+        img = (ImageView) findViewById(R.id.img);
+        editFacebook = (EditText) findViewById(R.id.editFB);
         editMdp = (EditText) findViewById(R.id.editMdp);
         editConfirmMdp = (EditText) findViewById(R.id.editConfirmMdp);
 
@@ -91,7 +93,6 @@ public class EditEtablissementProfilActivity extends Activity {
                 telfixe = "" + editFixe.getText().toString();
                 telportable = "" + editMobile.getText().toString();
                 siteweb = "" + editSiteweb.getText().toString();
-                imgUrl = "" + editImage.getText().toString();
                 facebook = "" + editFacebook.getText().toString();
                 password = "" + editMdp.getText().toString();
 
@@ -108,7 +109,6 @@ public class EditEtablissementProfilActivity extends Activity {
                 nameValuePairs.add(new BasicNameValuePair("tel_fixe", telfixe));
                 nameValuePairs.add(new BasicNameValuePair("tel_portable", telportable));
                 nameValuePairs.add(new BasicNameValuePair("siteweb", siteweb));
-                nameValuePairs.add(new BasicNameValuePair("image_url", imgUrl));
                 nameValuePairs.add(new BasicNameValuePair("facebook", facebook));
                 nameValuePairs.add(new BasicNameValuePair("password", password));
 
@@ -174,6 +174,25 @@ public class EditEtablissementProfilActivity extends Activity {
                 }
             }
         });
+        Button btn = (Button) findViewById(R.id.btnImage);
+
+        View.OnClickListener listnr = new View.OnClickListener() {
+            public void onClick(View v) {
+                new Thread(new Runnable() {
+                    public void run() {
+                        type="etablissement";
+                        Intent i = new Intent(EditEtablissementProfilActivity.this, UploadActivity.class);
+                        i.putExtra("id_user", id_user);
+                        i.putExtra("type", type);
+                        startActivity(i);
+
+                    }
+                }).start();
+            }
+
+        };
+
+        btn.setOnClickListener(listnr);
 
     }
     private class ReadProfilTask extends AsyncTask<Integer, Void, InputStream>
@@ -184,6 +203,7 @@ public class EditEtablissementProfilActivity extends Activity {
             //tag récupération des informations de profil établissement
             String tag = "read_EtablissementProfil";
             InputStream is = null;
+
             //setting nameValuePairs
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
             //adding string variables into the NameValuePairs
@@ -234,11 +254,12 @@ public class EditEtablissementProfilActivity extends Activity {
                 int i;
             String result = null;
             try {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-        StringBuilder total = new StringBuilder();
-        String json = reader.readLine();
-        JSONTokener tokener = new JSONTokener(json);
-        JSONArray finalResult = new JSONArray(tokener);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                StringBuilder total = new StringBuilder();
+                String json = reader.readLine();
+                JSONTokener tokener = new JSONTokener(json);
+                JSONArray finalResult = new JSONArray(tokener);
+                Bitmap imgurl;
 
         // Access by key : value
         for (i = 0; i < finalResult.length(); i++) {
@@ -265,9 +286,13 @@ public class EditEtablissementProfilActivity extends Activity {
             editMobile.setText(telportable);
             editFixe.setText(telfixe);
             editSiteweb.setText(siteweb);
-            editImage.setText(imgUrl);
+
             editFacebook.setText(facebook);
             editMdp.setText(password);
+
+            InputStream in = new java.net.URL(imgUrl).openStream();
+            imgurl = BitmapFactory.decodeStream(in);
+            img.setImageBitmap(imgurl);
         }
         is.close();
 

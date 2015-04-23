@@ -53,7 +53,6 @@ public class RegisterArtistActivity extends Activity {
         // On met un Listener sur le bouton
         btSubmit.setOnClickListener(new OnClickListener() {
 
-
             @Override
             public void onClick(View arg0) {
                 //put the editText value into string variables
@@ -66,21 +65,19 @@ public class RegisterArtistActivity extends Activity {
                 new RegisterProfilTask().execute();
 
             }
-
         });
 
     }
-    private class RegisterProfilTask extends AsyncTask<Void, Void, Void>
+    private class RegisterProfilTask extends AsyncTask<Void, Void, String>
     {
         @Override
-        protected Void doInBackground(Void... params) {
+        protected String doInBackground(Void... params) {
             tag = "artist_register";
             InputStream is = null;
             //setting nameValuePairs
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
             //adding string variables into the NameValuePairs
             nameValuePairs.add(new BasicNameValuePair("pseudo", pseudo));
-            //nameValuePairs.add(new BasicNameValuePair("email", email));
             nameValuePairs.add(new BasicNameValuePair("password", password));
             nameValuePairs.add(new BasicNameValuePair("tag", tag));
 
@@ -125,8 +122,7 @@ public class RegisterArtistActivity extends Activity {
                     //displaying a toast message if the data is entered in the database
                     //msg = "Données enregistrées en BDD artist";
                     // Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                    Intent i = new Intent(RegisterArtistActivity.this, LoginActivity.class);
-                    startActivity(i);
+                    is.close();
 
                 } catch (ClientProtocolException e) {
                     Log.e("ClientProtocole", "Log_tag");
@@ -139,28 +135,25 @@ public class RegisterArtistActivity extends Activity {
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                 }
 
-            }else {
-                new Thread(new Runnable() {
-                    public void run() {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-
-                                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-
-                            }
-                        });
-                    }
-                }).start();
-
             }
-            return null;
+            return emailvalid;
         }
         protected void onProgressUpdate(Void params) {
 
         }
 
-        protected void onPostExecute(Void params) {
+        protected void onPostExecute(String emailvalid) {
+            if(emailvalid=="ok") {
+                Intent i = new Intent(RegisterArtistActivity.this, LoginActivity.class);
+                startActivity(i);
+                msg="Bienvenue ! ";
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 
+            }
+            else
+            {
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+            }
         }
 
         }

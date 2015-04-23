@@ -1,7 +1,9 @@
 package com.blinky.peestash.app;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -25,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 import android.view.View.OnClickListener;
@@ -34,6 +37,7 @@ public class LoginActivity extends Activity {
 
     private Button btArtist, btEtablissement, btConnect;
     EditText etEmail, etPassword;
+    ProgressDialog progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +51,8 @@ public class LoginActivity extends Activity {
         btArtist = (Button) findViewById(R.id.btnRegisterArtist);
         btEtablissement = (Button) findViewById(R.id.btnRegisterEtablissement);
         btConnect = (Button) findViewById(R.id.btnLogin);
-
         etEmail = (EditText) findViewById(R.id.email);
         etPassword = (EditText) findViewById(R.id.password);
-
         // On met un Listener sur le bouton Artist
         btArtist.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,121 +73,134 @@ public class LoginActivity extends Activity {
         // On met un Listener sur le bouton Se Connecter
         btConnect.setOnClickListener(new OnClickListener() {
 
-
-            InputStream is = null;
             //création d'un nouveau thread pour la connexion vers la BDD
 
             public void onClick(View v) {
-                new Thread(new Runnable() {
-                    public void run() {
 
-                        //put the editText value into string variables
-                        String email = ""+etEmail.getText().toString();
-                        String password = ""+etPassword.getText().toString();
-                        String result = null;
-                        //tag Connexion
-                        String tag = "connexion";
-
-                        //setting nameValuePairs
-                        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-                        //adding string variables into the NameValuePairs
-                        nameValuePairs.add(new BasicNameValuePair("email", email));
-                        nameValuePairs.add(new BasicNameValuePair("password", password));
-                        nameValuePairs.add(new BasicNameValuePair("tag", tag));
-
-                        //setting the connection to the database
-                        try{
-                            //Setting up the default http client
-                            HttpClient httpClient = new DefaultHttpClient();
-
-                            //setting up the http post method
-                            HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
-                            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                            //getting the response
-                            HttpResponse response = httpClient.execute(httpPost);
-
-                            //setting up the entity
-                            HttpEntity entity = response.getEntity();
-
-                            //setting up the content inside the input stream reader
-                            is = entity.getContent();
-
-                        }catch(ClientProtocolException e){
-
-                            Log.e("ClientProtocole", "Log_tag");
-                            String msg = "Erreur client protocole";
-
-                        }catch(IOException e)
-                        {
-                            Log.e("Log_tag", "IOException");
-                            e.printStackTrace();
-                            String msg = "Erreur IOException";
-                        }
-                        try{
-                            BufferedReader reader= new BufferedReader(new InputStreamReader(is,"UTF-8"));
-                            StringBuilder total = new StringBuilder();
-
-                            String line;
-
-                            while ((line = reader.readLine()) != null) {
-                                total.append(line);
-                            }
-
-                            is.close();
-
-                            result= total.toString();
-
-
-                            if(result.equals(null) || result.equals("[]"))
-                            {
-                                new Thread(new Runnable() {
-                                    public void run() {
-                                        runOnUiThread(new Runnable() {
-                                            public void run() {
-                                                String msg = "Erreur de connexion";
-                                                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-
-                                            }
-                                        });
-                                       }
-                                }).start();
-                            }
-                            else {
-
-                                String id = result.substring(7,11);
-                                id = id.replace("\"","");
-                                id = id.replace(",","");
-                                id=id.trim();
-
-                                if(result.indexOf("artiste")!=-1) {
-
-                                    String msg = "Vous êtes connecté en tant qu'artiste \n id =" + id + "\n";
-                                    //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                                    Intent i = new Intent(LoginActivity.this, ArtistHomeActivity.class);
-                                    i.putExtra("id_user", id);
-                                    startActivity(i);
-
-                                }
-                                else if(result.indexOf("etablissement")!=-1) {
-
-                                    // String msg = "Vous êtes connecté en tant qu'établissement \n id =" + id + "\n";
-
-                                    // Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-                                    Intent i = new Intent(LoginActivity.this, EtablissementHomeActivity.class);
-                                    i.putExtra("id_user", id);
-                                    startActivity(i);
-                                }
-
-
-                            }
-                        } catch (Exception e) {
-                            Log.i("tagconvertstr", "" + e.toString());
-                        }
-                    }
-                }).start();
+                        new ConnexionTask().execute();
             }
+
         });
     }
+    private class ConnexionTask extends AsyncTask<Void, Void, ArrayList> {
+        ArrayList<String> valid = new ArrayList<String>();
+        List<NameValuePair> nameValuePairs;
+        InputStream is = null;
+        String msg="";
+        String result = null;
+        @Override
+        protected ArrayList doInBackground(Void... params) {
 
-}
+            String email = ""+etEmail.getText().toString();
+            String password = ""+etPassword.getText().toString();
+            //tag Connexion
+            String tag = "connexion";
+
+            //setting nameValuePairs
+            nameValuePairs = new ArrayList<NameValuePair>(1);
+            //adding string variables into the NameValuePairs
+            nameValuePairs.add(new BasicNameValuePair("email", email));
+            nameValuePairs.add(new BasicNameValuePair("password", password));
+            nameValuePairs.add(new BasicNameValuePair("tag", tag));
+            //setting the connection to the database
+            try{
+                //Setting up the default http client
+                HttpClient httpClient = new DefaultHttpClient();
+
+                //setting up the http post method
+                HttpPost httpPost = new HttpPost("http://peestash.peestash.fr/index.php");
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                //getting the response
+                HttpResponse response = httpClient.execute(httpPost);
+
+                //setting up the entity
+                HttpEntity entity = response.getEntity();
+
+                //setting up the content inside the input stream reader
+                is = entity.getContent();
+
+            }catch(ClientProtocolException e){
+
+                Log.e("ClientProtocole", "Log_tag");
+                msg = "Erreur client protocole";
+
+            }catch(IOException e)
+            {
+                Log.e("Log_tag", "IOException");
+                e.printStackTrace();
+                msg = "Erreur IOException";
+            }
+            try{
+                BufferedReader reader= new BufferedReader(new InputStreamReader(is,"UTF-8"));
+                StringBuilder total = new StringBuilder();
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    total.append(line);
+                }
+
+                result = total.toString();
+
+                if(result.equals(null) || result.equals("[]"))
+                {
+                    valid.add("no");
+                }
+                else {
+                    String id = result.substring(7, 11);
+                    id = id.replace("\"", "");
+                    id = id.replace(",", "");
+                    id = id.trim();
+
+                    valid.add(0,id);
+                    valid.add("ok");
+
+                    if (result.indexOf("artiste") != -1) {
+                        valid.add("artiste");
+
+                    } else if (result.indexOf("etablissement") != -1) {
+                        valid.add("etablissement");
+                    }
+
+                }
+                is.close();
+
+            } catch (Exception e) {
+                Log.i("tagconvertstr", "" + e.toString());
+            }
+
+            return valid;
+        }
+        @Override
+        protected void onPostExecute(ArrayList valid) {
+                if(valid.indexOf("ok") == -1) {
+                    new Thread(new Runnable() {
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    msg = "Erreur de connexion";
+                                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }).start();
+                }else {
+                    if(valid.indexOf("artiste")==-1)
+                    {
+                        String id= (valid.get(0)).toString();
+                        Intent i = new Intent(LoginActivity.this, EtablissementHomeActivity.class);
+                        i.putExtra("id_user", id);
+                        startActivity(i);
+                    }
+                    else {
+                        String id= (valid.get(0)).toString();
+                        Intent i = new Intent(LoginActivity.this, ArtistHomeActivity.class);
+                        i.putExtra("id_user", id);
+                        startActivity(i);
+                    }
+                }
+            }
+        }
+    }
+
+
