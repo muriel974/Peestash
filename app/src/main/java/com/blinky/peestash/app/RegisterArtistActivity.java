@@ -92,12 +92,12 @@ public class RegisterArtistActivity extends Activity {
                 } else
                 {
                     emailvalid = "no";
-                    msg = "\nVeuillez écrire l'email et la confirmation d'email correctement";
+                    msg = "Veuillez écrire l'email et la confirmation d'email correctement.\n";
                 }
             } else
             {
                 emailvalid = "no";
-                msg = msg + "\nVeuillez écrire correctement votre email";
+                msg = msg + "Veuillez écrire correctement votre email.\n";
             }
             if(test.checkMdpWriting(password))
             {
@@ -107,13 +107,13 @@ public class RegisterArtistActivity extends Activity {
                 }else
                 {
                     passwordvalid = "no";
-                    msg = msg + "\nVeuillez écrire votre password et votre confirmation de password correctement";
+                    msg = msg + "Veuillez écrire votre password et votre confirmation de password correctement.\n";
                 }
 
             }else
             {
                 passwordvalid="no";
-                msg = msg + "\nVotre mot de passe doit contenir au minimum 3 caractères.";
+                msg = msg + "Votre mot de passe doit contenir au minimum 3 caractères.";
             }
 
             if (emailvalid == "ok" && passwordvalid == "ok") {
@@ -170,6 +170,7 @@ public class RegisterArtistActivity extends Activity {
             else
             {
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                msg="";
             }
         }
 

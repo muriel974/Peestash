@@ -95,6 +95,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
         editSiteweb = (EditText) findViewById(R.id.editSiteweb);
         img = (ImageView) findViewById(R.id.img);
         editPassword = (EditText) findViewById(R.id.editPassword);
+        editConfirmMdp = (EditText) findViewById(R.id.editConfirmMdp);
 
         //récupération des checkbox genres musicaux
         rock = (CheckBox) findViewById(R.id.rock);
@@ -124,9 +125,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
         id=Integer.parseInt(id_user);
         new ReadProfilTask().execute(id);
 
-
         wv = (WebView)findViewById(R.id.webView);
-
 
         // On met un Listener sur le bouton Artist
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -161,6 +160,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                                 age = "" + age;
                                 genre_musical = "" + genrelist.toString();
                                 password = "" + editPassword.getText().toString();
+                                confirmMdp = "" + editConfirmMdp.getText().toString();
 
                                 //setting nameValuePairs
                                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
@@ -181,9 +181,8 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                                 nameValuePairs.add(new BasicNameValuePair("siteweb", siteweb));
                                 nameValuePairs.add(new BasicNameValuePair("age", age));
                                 nameValuePairs.add(new BasicNameValuePair("genre_musical", genre_musical));
-                                nameValuePairs.add(new BasicNameValuePair("password", password));
 
-                                String emailvalid="ok";
+                                String emailvalid="ok",  passwordvalid = "ok", msg= "";
 
                                 if(email!="") {
                                     if(test.checkEmailWriting(email)) {
@@ -194,21 +193,42 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                                         }
                                         else {
                                             emailvalid="no";
-                                            msg = "Veuillez écrire correctement l'email et la confirmation d'e-mail";
+                                            msg = "Veuillez écrire correctement l'email et la confirmation d'e-mail.\n";
                                         }
                                     } else
                                     {
                                         emailvalid ="no";
-                                        msg = "Veuillez écrire un email correct.";
+                                        msg = "Veuillez écrire un email correct.\n";
                                     }
 
                                 }else {
                                     email = "" + affichageEmail.getText().toString();
                                     nameValuePairs.add(new BasicNameValuePair("email", email));
                                 }
-                                if(emailvalid=="ok") {
+                                if(password!="") {
+
+                                    if (test.checkMdpWriting(password)) {
+                                        if (test.checkMdp(password, confirmMdp)) {
+                                            passwordvalid = "ok";
+                                            nameValuePairs.add(new BasicNameValuePair("password", password));
+                                        } else {
+                                            passwordvalid = "no";
+                                            msg = msg + "Veuillez écrire votre password et votre confirmation de password correctement\n";
+                                        }
+
+                                    } else {
+                                        passwordvalid = "no";
+                                        msg = msg + "Votre mot de passe doit contenir au minimum 3 caractères.\n";
+                                    }
+                                }else {
+                                    password = "" + editPassword.getText().toString();
+                                    nameValuePairs.add(new BasicNameValuePair("password", password));
+                                }
+
+                                if(emailvalid == "ok" && passwordvalid == "ok") {
                                     //setting the connection to the database
                                     try {
+
                                         //Setting up the default http client
                                         HttpClient httpClient = new DefaultHttpClient();
 
@@ -241,7 +261,7 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                                     }
                                 }else {
                                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-
+                                    msg ="";
                                 }
                                       }
                         });

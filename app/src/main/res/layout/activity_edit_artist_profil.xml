@@ -414,7 +414,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/editConfirmMdp" android:gravity="fill_horizontal" android:minWidth="300dp"
-                    android:width="340dp"/>
+                    android:width="340dp" android:inputType="textPassword"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

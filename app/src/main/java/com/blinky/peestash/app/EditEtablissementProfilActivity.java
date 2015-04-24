@@ -86,6 +86,7 @@ public class EditEtablissementProfilActivity extends Activity {
                 nom = "" + editNom.getText().toString();
                 email = "" + editEmail.getText().toString();
                 confirmEmail = "" + editConfirmEmail.getText().toString();
+                confirmMdp = "" + editConfirmMdp.getText().toString();
                 adresse = "" + editAdresse.getText().toString();
                 cp = "" + editCP.getText().toString();
                 ville = "" + editVille.getText().toString();
@@ -112,7 +113,7 @@ public class EditEtablissementProfilActivity extends Activity {
                 nameValuePairs.add(new BasicNameValuePair("facebook", facebook));
                 nameValuePairs.add(new BasicNameValuePair("password", password));
 
-                String emailvalid="ok";
+                String emailvalid="ok", passwordvalid = "ok", msg= "";
 
                 if(email!="") {
                     if(test.checkEmailWriting(email)) {
@@ -135,8 +136,27 @@ public class EditEtablissementProfilActivity extends Activity {
                     email = "" + affichageEmail.getText().toString();
                     nameValuePairs.add(new BasicNameValuePair("email", email));
                 }
+                if(password!="") {
 
-                if (emailvalid == "ok") {
+                    if (test.checkMdpWriting(password)) {
+                        if (test.checkMdp(password, confirmMdp)) {
+                            passwordvalid = "ok";
+                            nameValuePairs.add(new BasicNameValuePair("password", password));
+                        } else {
+                            passwordvalid = "no";
+                            msg = msg + "Veuillez écrire votre password et votre confirmation de password correctement\n";
+                        }
+
+                    } else {
+                        passwordvalid = "no";
+                        msg = msg + "Votre mot de passe doit contenir au minimum 3 caractères.\n";
+                    }
+                }else {
+                    password = "" + editMdp.getText().toString();
+                    nameValuePairs.add(new BasicNameValuePair("password", password));
+                }
+
+                if(emailvalid == "ok" && passwordvalid == "ok") {
                     //setting the connection to the database
                     try {
                         //Setting up the default http client
@@ -171,6 +191,7 @@ public class EditEtablissementProfilActivity extends Activity {
                     }
                 }else {
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    msg = "";
                 }
             }
         });

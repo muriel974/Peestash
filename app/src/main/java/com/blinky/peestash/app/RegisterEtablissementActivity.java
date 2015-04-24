@@ -163,6 +163,7 @@ public class RegisterEtablissementActivity extends Activity {
 
             } else {
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                msg = "";
             }
         }
 
