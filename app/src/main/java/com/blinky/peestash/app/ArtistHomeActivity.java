@@ -42,8 +42,6 @@ public class ArtistHomeActivity extends Activity {
     ImageView img;
     private String pseudo = "", nom = "", prenom = "", age = "", email = "", ville = "", adresse = "", cp = "", pays = "",
             telportable = "", telfixe = "", dispo = "", soundcloud = "", siteweb = "", imgUrl = "", genre_musical = "";
-    Verify test = new Verify();
-    String msg="";
     ProgressDialog progress;
     private WebView wv;
     private Button btn_editProfil;
@@ -107,6 +105,7 @@ public class ArtistHomeActivity extends Activity {
         String tag = "read_ArtistProfil";
         InputStream is = null;
         List<NameValuePair> nameValuePairs;
+
         protected InputStream doInBackground(Void ... params) {
             //setting nameValuePairs
             nameValuePairs = new ArrayList<NameValuePair>(1);
@@ -192,12 +191,16 @@ public class ArtistHomeActivity extends Activity {
                     Prenom.setText(prenom);
                     Pseudo.setText(pseudo);
                     Age.setText(age);
+                    genre_musical = genre_musical.replace(String.valueOf("["), "");
+                    genre_musical = genre_musical.replace(String.valueOf("]"), "");
                     Genre.setText(genre_musical);
                     Email.setText(email);
                     Adresse.setText(adresse);
                     CP.setText(cp);
                     Ville.setText(ville);
                     Pays.setText(pays);
+                    dispo = dispo.replace(String.valueOf("["), "");
+                    dispo = dispo.replace(String.valueOf("]"), "");
                     Dispo.setText(dispo);
                     Mobile.setText(telportable);
                     Fixe.setText(telfixe);
