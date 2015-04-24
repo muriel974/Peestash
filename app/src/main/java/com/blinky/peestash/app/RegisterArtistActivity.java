@@ -74,14 +74,14 @@ public class RegisterArtistActivity extends Activity {
         protected String doInBackground(Void... params) {
             tag = "artist_register";
             InputStream is = null;
+            String loginOk="no";
             //setting nameValuePairs
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
             //adding string variables into the NameValuePairs
             nameValuePairs.add(new BasicNameValuePair("pseudo", pseudo));
-            nameValuePairs.add(new BasicNameValuePair("password", password));
             nameValuePairs.add(new BasicNameValuePair("tag", tag));
 
-            String emailvalid = "ok";
+            String emailvalid = "ok", passwordvalid = "ok";
 
             if(test.checkEmailWriting(email))
             {
@@ -92,17 +92,34 @@ public class RegisterArtistActivity extends Activity {
                 } else
                 {
                     emailvalid = "no";
-                    msg = "Veuillez écrire l'email et la confirmation d'email correctement";
+                    msg = "\nVeuillez écrire l'email et la confirmation d'email correctement";
                 }
             } else
             {
                 emailvalid = "no";
-                msg = "Veuillez écrire correctement votre email";
+                msg = msg + "\nVeuillez écrire correctement votre email";
+            }
+            if(test.checkMdpWriting(password))
+            {
+                if(test.checkMdp(password, confirmPassword)) {
+                    passwordvalid = "ok";
+                    nameValuePairs.add(new BasicNameValuePair("password", password));
+                }else
+                {
+                    passwordvalid = "no";
+                    msg = msg + "\nVeuillez écrire votre password et votre confirmation de password correctement";
+                }
+
+            }else
+            {
+                passwordvalid="no";
+                msg = msg + "\nVotre mot de passe doit contenir au minimum 3 caractères.";
             }
 
-            if (emailvalid == "ok") {
+            if (emailvalid == "ok" && passwordvalid == "ok") {
                 //setting the connection to the database
                 try {
+                    loginOk ="ok";
                     //Setting up the default http client
                     HttpClient httpClient = new DefaultHttpClient();
 
@@ -136,14 +153,14 @@ public class RegisterArtistActivity extends Activity {
                 }
 
             }
-            return emailvalid;
+            return loginOk;
         }
         protected void onProgressUpdate(Void params) {
 
         }
 
-        protected void onPostExecute(String emailvalid) {
-            if(emailvalid=="ok") {
+        protected void onPostExecute(String loginOk) {
+            if(loginOk=="ok") {
                 Intent i = new Intent(RegisterArtistActivity.this, LoginActivity.class);
                 startActivity(i);
                 msg="Bienvenue ! ";

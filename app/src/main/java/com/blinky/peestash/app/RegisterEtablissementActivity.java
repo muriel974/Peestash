@@ -71,6 +71,7 @@ public class RegisterEtablissementActivity extends Activity {
         protected String doInBackground(Void... params) {
             tag = "etablissement_register";
             InputStream is = null;
+            String loginOk="no";
             //setting nameValuePairs
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
             //adding string variables into the NameValuePairs
@@ -78,7 +79,7 @@ public class RegisterEtablissementActivity extends Activity {
             nameValuePairs.add(new BasicNameValuePair("password", password));
             nameValuePairs.add(new BasicNameValuePair("tag", tag));
 
-            String emailvalid = "ok";
+            String emailvalid = "ok", passwordvalid = "ok";
 
             if (test.checkEmailWriting(email)) {
                 if (test.checkEmail(email, confirmEmail)) {
@@ -92,10 +93,27 @@ public class RegisterEtablissementActivity extends Activity {
                 emailvalid = "no";
                 msg = "Veuillez écrire correctement votre email";
             }
+            if(test.checkMdpWriting(password))
+            {
+                if(test.checkMdp(password, confirmPassword)) {
+                    passwordvalid = "ok";
+                    nameValuePairs.add(new BasicNameValuePair("password", password));
+                }else
+                {
+                    passwordvalid = "no";
+                    msg = msg + "\nVeuillez écrire votre password et votre confirmation de password correctement";
+                }
 
-            if (emailvalid == "ok") {
+            }else
+            {
+                passwordvalid="no";
+                msg = msg + "\nVotre mot de passe doit contenir au minimum 3 caractères.";
+            }
+
+            if (emailvalid == "ok" && passwordvalid == "ok") {
                 //setting the connection to the database
                 try {
+                    loginOk ="ok";
                     //Setting up the default http client
                     HttpClient httpClient = new DefaultHttpClient();
 
@@ -129,15 +147,15 @@ public class RegisterEtablissementActivity extends Activity {
                 }
 
             }
-            return emailvalid;
+            return loginOk;
         }
 
         protected void onProgressUpdate(Void params) {
 
         }
 
-        protected void onPostExecute(String emailvalid) {
-            if (emailvalid == "ok") {
+        protected void onPostExecute(String loginOk) {
+            if(loginOk=="ok") {
                 Intent i = new Intent(RegisterEtablissementActivity.this, LoginActivity.class);
                 startActivity(i);
                 msg = "Bienvenue ! ";

@@ -52,7 +52,19 @@ public class Verify {
         }
         return valid;
     }
+    /* Vérification du mot de passe et vérification de mot de passe
+    */
+    public Boolean checkMdp(String password, String confirmPassword)
+    {
 
-
+        if(password.equals(confirmPassword))
+        {
+            valid=true;
+        }
+        else {
+            valid=false;
+        }
+        return valid;
+    }
 
 }
