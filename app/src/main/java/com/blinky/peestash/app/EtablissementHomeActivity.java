@@ -171,10 +171,12 @@ public class EtablissementHomeActivity extends Activity {
                     facebook = element.getString("facebook");
                     imgUrl = element.getString("image_url");
 
-                    InputStream in = new java.net.URL(imgUrl).openStream();
-                    imgurl = BitmapFactory.decodeStream(in);
-                    img.setImageBitmap(imgurl);
-
+                    if(imgUrl.length()!=0)
+                    {
+                        InputStream in = new java.net.URL(imgUrl).openStream();
+                        imgurl = BitmapFactory.decodeStream(in);
+                        img.setImageBitmap(imgurl);
+                    }
                     Nom.setText(nom);
                     Email.setText(email);
                     Adresse.setText(adresse);

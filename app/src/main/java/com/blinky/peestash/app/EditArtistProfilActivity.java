@@ -658,9 +658,12 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                     genre_musical = element.getString("genre_musical");
                     age = element.getString("age");
 
-                    InputStream in = new java.net.URL(imgUrl).openStream();
-                    imgurl = BitmapFactory.decodeStream(in);
-                    img.setImageBitmap(imgurl);
+                    if(imgUrl.length()!=0)
+                    {
+                        InputStream in = new java.net.URL(imgUrl).openStream();
+                        imgurl = BitmapFactory.decodeStream(in);
+                        img.setImageBitmap(imgurl);
+                    }
 
                     editNom.setText(nom);
                     editPrenom.setText(prenom);
@@ -765,9 +768,17 @@ public class EditArtistProfilActivity extends Activity implements AdapterView.On
                     }
 
                 }
-                html="<iframe width=\"100%\" height=\"450\" scrolling=\"yes\" frameborder=\"yes\" src=\"https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/"+soundcloud+"&amp;auto_play=false&amp;hide_related=true&amp;show_comments=false&amp;show_user=false&amp;show_reposts=false&amp;visual=false\"></iframe>";
-                wv.getSettings().setJavaScriptEnabled(true);
-                wv.loadDataWithBaseURL("", html , "text/html",  "UTF-8", "");
+
+                if(soundcloud.length()!=0) {
+                    html = "<iframe width=\"100%\" height=\"400\" scrolling=\"yes\" frameborder=\"no\" src=\"https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/" + soundcloud + "&amp;auto_play=false&amp;hide_related=false&amp;show_comments=false&amp;show_user=false&amp;show_reposts=false&amp;show_artwork=false&amp;buying=false\"></iframe>";
+                    wv.getSettings().setJavaScriptEnabled(true);
+                    wv.loadDataWithBaseURL("", html, "text/html", "UTF-8", "");
+                }else {
+                    html = "Vous n'avez pas renseigné l'ID de votre playlist Soundcloud";
+                    wv.getSettings().setJavaScriptEnabled(true);
+                    wv.loadDataWithBaseURL("", html, "text/html", "UTF-8", "");
+
+                }
                 // attaching data adapter to spinner
                 spinnerAge.setAdapter(dataAdapter);
 

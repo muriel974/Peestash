@@ -311,9 +311,12 @@ public class EditEtablissementProfilActivity extends Activity {
             editFacebook.setText(facebook);
             editMdp.setText(password);
 
-            InputStream in = new java.net.URL(imgUrl).openStream();
-            imgurl = BitmapFactory.decodeStream(in);
-            img.setImageBitmap(imgurl);
+            if(imgUrl.length()!=0)
+            {
+                InputStream in = new java.net.URL(imgUrl).openStream();
+                imgurl = BitmapFactory.decodeStream(in);
+                img.setImageBitmap(imgurl);
+            }
         }
         is.close();
 
